@@ -1,17 +1,28 @@
-# protege_saude
+# ProtegeSaude Mobile
 
-A new Flutter project.
+Aplicativo Flutter mobile do ProtegeSaude, implementado a partir de
+`mobile-app-plan.md`.
 
-## Getting Started
+## Rodando
 
-This project is a starting point for a Flutter application.
+```sh
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run --dart-define=API_BASE_URL=https://backend-protege-saude-production.up.railway.app/api
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Verificacao
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```sh
+flutter analyze
+flutter test
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# app-protege-saude
+## Escopo do MVP
+
+- Home publica unificada.
+- Fluxo anonimo de denuncia com profissao, CEP, formulario dinamico, fotos,
+  rascunho local criptografado, resumo, PDF e envio multipart.
+- Confirmacao de envio com protocolo e PDF local.
+- Documentos norteadores por profissao com fallback local.
+- Pontos de apoio e pagina institucional.

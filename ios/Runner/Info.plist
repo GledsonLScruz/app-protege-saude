@@ -16,6 +16,12 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>protege_saude</string>
+	<key>NSCameraUsageDescription</key>
+	<string>O ProtegeSaude usa a camera para anexar fotos a denuncia, quando necessario.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>O ProtegeSaude usa sua galeria para selecionar fotos que podem apoiar a denuncia.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>O ProtegeSaude pode salvar arquivos gerados no dispositivo quando voce escolher compartilhar ou exportar.</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
