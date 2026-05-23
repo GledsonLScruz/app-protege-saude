@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/services.dart';
 import '../../../shared/models/complaint_models.dart';
 import '../../../shared/models/public_form.dart';
 import '../../../shared/utils/date_utils.dart';
+import '../../../shared/utils/display_text.dart';
 import '../../../shared/utils/text_normalizer.dart';
 import '../../../shared/widgets/searchable_select.dart';
 
@@ -41,15 +43,19 @@ class DynamicFormStepView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       children: [
-        Text(step.titulo, style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          accentPortugueseText(step.titulo),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         if (step.descricao?.trim().isNotEmpty == true) ...[
           const SizedBox(height: 8),
-          Text(step.descricao!),
+          Text(accentPortugueseText(step.descricao!)),
         ],
         const SizedBox(height: 20),
         for (final field in step.campos) ...[
           _FieldShell(
             field: field,
+            color: color,
             error: errorFor(field),
             child: _fieldWidget(context, field),
           ),
@@ -69,7 +75,7 @@ class DynamicFormStepView extends StatelessWidget {
         value,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
       ),
-      'data' => _dateField(context, field, value),
+      'data' => _dateField(field, value),
       'cep' => _textField(
         field,
         formatCep(value?.toString() ?? ''),
@@ -104,40 +110,29 @@ class DynamicFormStepView extends StatelessWidget {
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
         hintText: field.dica?.trim().isNotEmpty == true
-            ? field.dica
+            ? accentPortugueseText(field.dica!)
             : 'Digite sua resposta',
       ),
       onChanged: (text) => onChanged(field, text),
     );
   }
 
-  Widget _dateField(
-    BuildContext context,
-    PublicFormField field,
-    Object? value,
-  ) {
-    final text = formatDateBr(value?.toString());
-    return InkWell(
-      onTap: () async {
-        final now = DateTime.now();
-        final selected = await showDatePicker(
-          context: context,
-          initialDate: DateTime.tryParse(value?.toString() ?? '') ?? now,
-          firstDate: DateTime(now.year - 120),
-          lastDate: DateTime(now.year + 5),
-        );
-        if (selected != null) {
-          onChanged(field, simpleIsoDate(selected));
-        }
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: InputDecorator(
-        decoration: const InputDecoration(
-          suffixIcon: Icon(Icons.calendar_month_rounded),
-          hintText: 'Selecione uma data',
-        ),
-        child: Text(text.isEmpty ? 'Selecione uma data' : text),
+  Widget _dateField(PublicFormField field, Object? value) {
+    return TextFormField(
+      key: ValueKey('${field.id}_${field.type}'),
+      initialValue: formatDateBr(value?.toString()),
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly,
+        _DateInputFormatter(),
+      ],
+      decoration: InputDecoration(
+        hintText: field.dica?.trim().isNotEmpty == true
+            ? accentPortugueseText(field.dica!)
+            : 'dd/mm/aaaa',
+        suffixIcon: const Icon(Icons.calendar_month_rounded),
       ),
+      onChanged: (text) => onChanged(field, text),
     );
   }
 
@@ -165,7 +160,7 @@ class DynamicFormStepView extends StatelessWidget {
         SearchableSelect<FormOption>(
           label: 'Selecione',
           items: field.opcoes,
-          itemLabel: (option) => option.label,
+          itemLabel: (option) => accentPortugueseText(option.label),
           value: selected,
           onSelected: (option) => onChanged(field, option.valor),
         ),
@@ -181,7 +176,7 @@ class DynamicFormStepView extends StatelessWidget {
               value: option.valor,
               groupValue: value?.toString(),
               onChanged: (selected) => onChanged(field, selected),
-              title: Text(option.label),
+              title: Text(accentPortugueseText(option.label)),
               activeColor: color,
               contentPadding: EdgeInsets.zero,
             ),
@@ -208,7 +203,7 @@ class DynamicFormStepView extends StatelessWidget {
             }
             onChanged(field, updated.toList());
           },
-          title: Text(option.label),
+          title: Text(accentPortugueseText(option.label)),
           activeColor: color,
           contentPadding: EdgeInsets.zero,
           controlAffinity: ListTileControlAffinity.leading,
@@ -234,7 +229,7 @@ class DynamicFormStepView extends StatelessWidget {
         SwitchListTile(
           value: boolValue ?? false,
           onChanged: setSwitch,
-          title: Text(boolValue == true ? 'Sim' : 'Nao'),
+          title: Text(boolValue == true ? 'Sim' : 'Não'),
           activeThumbColor: color,
           contentPadding: EdgeInsets.zero,
         ),
@@ -262,7 +257,7 @@ class DynamicFormStepView extends StatelessWidget {
                       'selecionados': updated.toList(),
                     });
                   },
-                  title: Text(option.label),
+                  title: Text(accentPortugueseText(option.label)),
                   activeColor: color,
                   contentPadding: EdgeInsets.zero,
                   controlAffinity: ListTileControlAffinity.leading,
@@ -302,7 +297,7 @@ class DynamicFormStepView extends StatelessWidget {
                   }
                 },
                 icon: const Icon(Icons.photo_camera_rounded),
-                label: const Text('Camera'),
+                label: const Text('Câmera'),
               ),
               OutlinedButton.icon(
                 onPressed: () async {
@@ -340,7 +335,7 @@ class DynamicFormStepView extends StatelessWidget {
                                 errorBuilder: (_, _, _) => const SizedBox(
                                   height: 80,
                                   child: Center(
-                                    child: Text('Imagem indisponivel.'),
+                                    child: Text('Imagem indisponível.'),
                                   ),
                                 ),
                               ),
@@ -401,9 +396,15 @@ class _CepInputFormatter extends TextInputFormatter {
 }
 
 class _FieldShell extends StatelessWidget {
-  const _FieldShell({required this.field, required this.child, this.error});
+  const _FieldShell({
+    required this.field,
+    required this.color,
+    required this.child,
+    this.error,
+  });
 
   final PublicFormField field;
+  final Color color;
   final Widget child;
   final String? error;
 
@@ -412,28 +413,7 @@ class _FieldShell extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                field.nome,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-            ),
-            if (field.isRequired)
-              Text(
-                '*',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-          ],
-        ),
-        if (field.dica?.trim().isNotEmpty == true) ...[
-          const SizedBox(height: 4),
-          Text(field.dica!, style: Theme.of(context).textTheme.bodySmall),
-        ],
+        _FieldLabel(field: field, color: color),
         const SizedBox(height: 8),
         child,
         if (error != null) ...[
@@ -446,4 +426,334 @@ class _FieldShell extends StatelessWidget {
       ],
     );
   }
+}
+
+class _FieldLabel extends StatelessWidget {
+  const _FieldLabel({required this.field, required this.color});
+
+  final PublicFormField field;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final labelStyle = textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+    final hint = _usesInlineHint(field) ? null : field.dica?.trim();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 6,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            RichText(
+              text: TextSpan(
+                style: labelStyle,
+                children: [
+                  TextSpan(text: accentPortugueseText(field.nome)),
+                  if (field.isRequired)
+                    TextSpan(
+                      text: ' *',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (hint?.isNotEmpty == true)
+              _QuestionHint(color: color, message: accentPortugueseText(hint!)),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+bool _usesInlineHint(PublicFormField field) {
+  return switch (field.type) {
+    'texto' || 'textarea' || 'numero' || 'data' || 'cep' => true,
+    _ => false,
+  };
+}
+
+class _DateInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final digits = onlyDigits(newValue.text);
+    final limited = digits.length > 8 ? digits.substring(0, 8) : digits;
+    final buffer = StringBuffer();
+    for (var index = 0; index < limited.length; index++) {
+      if (index == 2 || index == 4) {
+        buffer.write('/');
+      }
+      buffer.write(limited[index]);
+    }
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
+class _QuestionHint extends StatefulWidget {
+  const _QuestionHint({required this.color, required this.message});
+
+  final Color color;
+  final String message;
+
+  @override
+  State<_QuestionHint> createState() => _QuestionHintState();
+}
+
+class _QuestionHintState extends State<_QuestionHint>
+    with SingleTickerProviderStateMixin {
+  final GlobalKey _buttonKey = GlobalKey();
+  late final AnimationController _controller;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _scaleAnimation;
+  OverlayEntry? _overlayEntry;
+  Timer? _dismissTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 180),
+      reverseDuration: const Duration(milliseconds: 120),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 0.96,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+  }
+
+  @override
+  void dispose() {
+    _dismissTimer?.cancel();
+    _removeOverlay(immediate: true);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _showOverlay() {
+    _dismissTimer?.cancel();
+    final overlayState = Overlay.maybeOf(context, rootOverlay: true);
+    final buttonRenderBox =
+        _buttonKey.currentContext?.findRenderObject() as RenderBox?;
+    final overlayRenderBox =
+        overlayState?.context.findRenderObject() as RenderBox?;
+
+    if (overlayState == null ||
+        buttonRenderBox == null ||
+        overlayRenderBox == null) {
+      return;
+    }
+
+    const screenMargin = 16.0;
+    const tooltipGap = 10.0;
+    final overlaySize = overlayRenderBox.size;
+    final buttonOffset = buttonRenderBox.localToGlobal(
+      Offset.zero,
+      ancestor: overlayRenderBox,
+    );
+    final buttonSize = buttonRenderBox.size;
+    final availableWidth = overlaySize.width - (screenMargin * 2);
+    final tooltipWidth = availableWidth < 220
+        ? availableWidth
+        : availableWidth > 340
+        ? 340.0
+        : availableWidth;
+    final desiredLeft =
+        buttonOffset.dx + (buttonSize.width / 2) - (tooltipWidth / 2);
+    final maxLeft = overlaySize.width - tooltipWidth - screenMargin;
+    final left = desiredLeft
+        .clamp(screenMargin, maxLeft < screenMargin ? screenMargin : maxLeft)
+        .toDouble();
+    final bottom = overlaySize.height - buttonOffset.dy + tooltipGap;
+
+    if (_overlayEntry == null) {
+      _overlayEntry = OverlayEntry(
+        builder: (context) => Positioned(
+          left: left,
+          bottom: bottom,
+          width: tooltipWidth,
+          child: IgnorePointer(
+            child: _HintTooltip(
+              message: widget.message,
+              fadeAnimation: _fadeAnimation,
+              scaleAnimation: _scaleAnimation,
+            ),
+          ),
+        ),
+      );
+      overlayState.insert(_overlayEntry!);
+    }
+
+    _controller.forward(from: 0);
+    _dismissTimer = Timer(const Duration(seconds: 4), () => _removeOverlay());
+  }
+
+  Future<void> _removeOverlay({bool immediate = false}) async {
+    _dismissTimer?.cancel();
+    _dismissTimer = null;
+
+    final entry = _overlayEntry;
+    if (entry == null) {
+      return;
+    }
+
+    if (!immediate && mounted) {
+      await _controller.reverse();
+    }
+    entry.remove();
+    if (_overlayEntry == entry) {
+      _overlayEntry = null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'Mostrar dica da pergunta',
+      child: Material(
+        color: Colors.transparent,
+        child: InkResponse(
+          onTap: _showOverlay,
+          radius: 22,
+          customBorder: const CircleBorder(),
+          child: SizedBox.square(
+            key: _buttonKey,
+            dimension: 44,
+            child: Center(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 160),
+                width: 26,
+                height: 26,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: widget.color,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x22000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  '?',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    height: 1,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HintTooltip extends StatelessWidget {
+  const _HintTooltip({
+    required this.message,
+    required this.fadeAnimation,
+    required this.scaleAnimation,
+  });
+
+  final String message;
+  final Animation<double> fadeAnimation;
+  final Animation<double> scaleAnimation;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return FadeTransition(
+      opacity: fadeAnimation,
+      child: ScaleTransition(
+        scale: scaleAnimation,
+        alignment: Alignment.bottomCenter,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: const Color(0xFF143642),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white.withOpacity(0.16)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x33000000),
+                    blurRadius: 24,
+                    offset: Offset(0, 14),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+                child: Text(
+                  message,
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ),
+            ClipPath(
+              clipper: const _TooltipArrowClipper(),
+              child: ColoredBox(
+                color: const Color(0xFF143642),
+                child: const SizedBox(width: 18, height: 9),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TooltipArrowClipper extends CustomClipper<Path> {
+  const _TooltipArrowClipper();
+
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, 0)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(_TooltipArrowClipper oldClipper) => false;
 }

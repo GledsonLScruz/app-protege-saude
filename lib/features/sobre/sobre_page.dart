@@ -16,13 +16,16 @@ class SobrePage extends StatelessWidget {
     return AppScaffold(
       title: 'Sobre',
       actions: [
-        IconButton(
-          tooltip: 'Compartilhar',
-          onPressed: () => actions.shareText(
-            '${AppConstants.shareText}\n${AppConstants.defaultShareUrl}',
-            subject: AppConstants.appName,
+        Builder(
+          builder: (context) => IconButton(
+            tooltip: 'Compartilhar',
+            onPressed: () => actions.shareText(
+              '${AppConstants.shareText}\n${AppConstants.defaultShareUrl}',
+              subject: AppConstants.appName,
+              sharePositionOrigin: ExternalActions.sharePositionOrigin(context),
+            ),
+            icon: const Icon(Icons.ios_share_rounded),
           ),
-          icon: const Icon(Icons.ios_share_rounded),
         ),
       ],
       body: ListView(
@@ -30,48 +33,56 @@ class SobrePage extends StatelessWidget {
         children: [
           Text(
             'Sobre o ProtegeSaude',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Tecnologia, saúde e rede de proteção trabalhando para orientar denúncias com mais clareza.',
           ),
           const SizedBox(height: 12),
           const _InfoCard(
             title: 'Nossa Origem',
             text:
-                'O ProtegeSaude nasceu de um projeto de extensao do curso de Odontologia da UEPB, visando criar uma ferramenta para auxiliar profissionais de saude na identificacao e denuncia de casos de maus-tratos e violencia contra criancas e adolescentes.',
+                'O ProtegeSaude nasceu de um projeto de extensão do curso de Odontologia da UEPB, visando criar uma ferramenta para auxiliar profissionais de saúde na identificação e denúncia de casos de maus-tratos e violência contra crianças e adolescentes.',
           ),
           const _PartnersCard(),
           const _InfoCard(
             title: 'Desenvolvimento',
             text:
-                'Desenvolvido por Huandrey Pontes, estudante da UFCG, como parte de seu TCC, aplicando teorias de UI para atender as necessidades dos profissionais de saude.',
+                'Desenvolvido por Huandrey Pontes, estudante da UFCG, como parte de seu TCC, aplicando teorias de UI para atender às necessidades dos profissionais de saúde.',
           ),
           _InfoCard(
-            title: 'Codigo Aberto',
+            title: 'Código Aberto',
             text:
-                'O ProtegeSaude e um projeto de codigo aberto, permitindo que a comunidade contribua para seu desenvolvimento e melhoria continua.',
+                'O ProtegeSaude é um projeto de código aberto, permitindo que a comunidade contribua para seu desenvolvimento e melhoria contínua.',
             buttonLabel: 'Abrir GitHub',
             onPressed: () => actions.openUrl(AppConstants.githubUrl),
           ),
           _InfoCard(
             title: 'Processo Criativo',
             text:
-                'O processo criativo por tras do desenvolvimento do ProtegeSaude esta documentado e disponivel para visualizacao.',
+                'O processo criativo por trás do desenvolvimento do ProtegeSaude está documentado e disponível para visualização.',
             buttonLabel: 'Abrir YouTube',
             onPressed: () => actions.openUrl(AppConstants.creativeProcessUrl),
           ),
-          FilledButton.icon(
-            onPressed: () => actions.shareText(
-              '${AppConstants.shareText}\n${AppConstants.defaultShareUrl}',
-              subject: AppConstants.appName,
+          Builder(
+            builder: (context) => FilledButton.icon(
+              onPressed: () => actions.shareText(
+                '${AppConstants.shareText}\n${AppConstants.defaultShareUrl}',
+                subject: AppConstants.appName,
+                sharePositionOrigin: ExternalActions.sharePositionOrigin(
+                  context,
+                ),
+              ),
+              icon: const Icon(Icons.ios_share_rounded),
+              label: const Text('Compartilhar o ProtegeSaude'),
             ),
-            icon: const Icon(Icons.ios_share_rounded),
-            label: const Text('Compartilhar o ProtegeSaude'),
           ),
           const SizedBox(height: 18),
           const Text(
             'Todos os direitos reservados (c) ProtegeSaude 2024',
             textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 12),
           ),
         ],
       ),
@@ -105,10 +116,13 @@ class _InfoCard extends StatelessWidget {
             Text(text),
             if (buttonLabel != null) ...[
               const SizedBox(height: 12),
-              OutlinedButton.icon(
-                onPressed: onPressed,
-                icon: const Icon(Icons.open_in_new_rounded),
-                label: Text(buttonLabel!),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: onPressed,
+                  icon: const Icon(Icons.open_in_new_rounded),
+                  label: Text(buttonLabel!),
+                ),
               ),
             ],
           ],
@@ -132,14 +146,36 @@ class _PartnersCard extends StatelessWidget {
             Text('Parcerias', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             const Text(
-              'Este projeto e uma colaboracao entre a UFCG e a UEPB, unindo experiencia academica e tecnologica para um proposito social.',
+              'Este projeto é uma colaboração entre a UFCG e a UEPB, unindo experiência acadêmica e tecnológica para um propósito social.',
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: Image.asset(AppAssets.ufcgLogo, height: 70)),
+                Expanded(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Image.asset(AppAssets.ufcgLogo, height: 62),
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 12),
-                Expanded(child: Image.asset(AppAssets.uepbLogo, height: 70)),
+                Expanded(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Image.asset(AppAssets.uepbLogo, height: 62),
+                    ),
+                  ),
+                ),
               ],
             ),
           ],

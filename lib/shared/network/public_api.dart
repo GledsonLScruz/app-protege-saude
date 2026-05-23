@@ -12,6 +12,9 @@ import 'api_exception.dart';
 class PublicApi {
   PublicApi(this._client);
 
+  static const _complaintUploadSendTimeout = Duration(minutes: 2);
+  static const _complaintUploadReceiveTimeout = Duration(minutes: 1);
+
   final ApiClient _client;
 
   Future<List<Profession>> fetchPublicProfessions() async {
@@ -68,7 +71,11 @@ class PublicApi {
     final response = await _client.post<dynamic>(
       'denuncia',
       data: formData,
-      options: Options(contentType: 'multipart/form-data'),
+      options: Options(
+        contentType: 'multipart/form-data',
+        sendTimeout: _complaintUploadSendTimeout,
+        receiveTimeout: _complaintUploadReceiveTimeout,
+      ),
     );
     final data = _asMap(response.data);
     return (data['protocolo'] ?? protocol).toString();
@@ -99,7 +106,10 @@ class PublicApi {
     if (uri != null && uri.hasScheme) {
       return raw;
     }
-    final origin = _client.config.origin;
+    String origin = _client.config.origin;
+    if (origin.contains('?#')) {
+      origin = origin.replaceAll('?#', '');
+    }
     final path = raw.startsWith('/') ? raw : '/$raw';
     return '$origin$path';
   }

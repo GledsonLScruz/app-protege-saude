@@ -40,7 +40,7 @@ class DocumentFileService {
     final fallback = document.localFallback;
     if (fallback == null) {
       throw const DocumentUnavailableException(
-        'Documento sem arquivo disponivel para download.',
+        'Documento sem arquivo disponível para download.',
       );
     }
     final bytes = await rootBundle.load(assetForDocument(fallback));

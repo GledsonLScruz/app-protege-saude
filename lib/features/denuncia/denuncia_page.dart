@@ -38,91 +38,145 @@ class _DenunciaPageState extends State<DenunciaPage> {
           controller.selectedProfession?.cor ??
               controller.pendingProfession?.cor,
         );
+        final themedContext = _withProfessionTheme(context, color);
         if (!controller.wizardStarted) {
-          return AppScaffold(
-            title: 'Selecione a profissao',
-            body: _selectionBody(context, controller),
+          return Theme(
+            data: themedContext,
+            child: AppScaffold(
+              title: 'Selecione a profissão',
+              body: _selectionBody(context, controller, color),
+            ),
           );
         }
-        return WillPopScope(
-          onWillPop: () => _confirmExit(context, controller),
-          child: Stack(
-            children: [
-              Scaffold(
-                appBar: AppBar(
-                  leading: BackButton(
-                    onPressed: controller.isSubmitting
-                        ? null
-                        : () => _handleRouteBack(context, controller),
-                  ),
-                  title: Text(controller.currentStepTitle),
-                  actions: [
-                    TextButton(
+        return Theme(
+          data: themedContext,
+          child: WillPopScope(
+            onWillPop: () => _confirmExit(context, controller),
+            child: Stack(
+              children: [
+                Scaffold(
+                  appBar: AppBar(
+                    leading: BackButton(
                       onPressed: controller.isSubmitting
                           ? null
-                          : () async {
-                              final canExit = await _confirmExit(
-                                context,
-                                controller,
-                              );
-                              if (!context.mounted) {
-                                return;
-                              }
-                              if (canExit) {
-                                controller.returnToProfessionSelection();
-                              }
-                            },
-                      child: const Text('Trocar profissao'),
+                          : () => _handleRouteBack(context, controller),
                     ),
-                  ],
+                    title: Text(controller.currentStepTitle),
+                    actions: [
+                      TextButton(
+                        onPressed: controller.isSubmitting
+                            ? null
+                            : () async {
+                                final canExit = await _confirmExit(
+                                  context,
+                                  controller,
+                                );
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                if (canExit) {
+                                  controller.returnToProfessionSelection();
+                                }
+                              },
+                        child: const Text('Trocar profissão'),
+                      ),
+                    ],
+                  ),
+                  body: Column(
+                    children: [
+                      WizardProgress(
+                        titles: controller.stepTitles,
+                        currentIndex: controller.currentStep,
+                        isValid: controller.isStepValid,
+                        isAccessible: controller.isStepAccessible,
+                        onTap: controller.goToStep,
+                        color: color,
+                      ),
+                      Expanded(child: _wizardBody(controller, color)),
+                    ],
+                  ),
+                  bottomNavigationBar: _bottomBar(context, controller),
                 ),
-                body: Column(
-                  children: [
-                    WizardProgress(
-                      titles: controller.stepTitles,
-                      currentIndex: controller.currentStep,
-                      isValid: controller.isStepValid,
-                      isAccessible: controller.isStepAccessible,
-                      onTap: controller.goToStep,
-                      color: color,
-                    ),
-                    Expanded(child: _wizardBody(controller, color)),
-                  ],
-                ),
-                bottomNavigationBar: _bottomBar(context, controller, color),
-              ),
-              if (controller.isSubmitting)
-                Container(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  child: const Center(
-                    child: Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: 12),
-                            Text(
-                              'Gerando PDF e transmitindo a denuncia...',
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                if (controller.isSubmitting)
+                  Container(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    child: const Center(
+                      child: Card(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 12),
+                              Text(
+                                'Gerando PDF e transmitindo a denúncia...',
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _selectionBody(BuildContext context, DenunciaController controller) {
+  ThemeData _withProfessionTheme(BuildContext context, Color color) {
+    final base = Theme.of(context);
+    final onColor = color.computeLuminance() > 0.45
+        ? base.colorScheme.onSurface
+        : Colors.white;
+    final scheme = base.colorScheme.copyWith(
+      primary: color,
+      secondary: color,
+      onPrimary: onColor,
+    );
+    return base.copyWith(
+      colorScheme: scheme,
+      inputDecorationTheme: base.inputDecorationTheme.copyWith(
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: color, width: 1.6),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: base.filledButtonTheme.style?.copyWith(
+          backgroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? scheme.onSurface.withValues(alpha: 0.12)
+                : color,
+          ),
+          foregroundColor: WidgetStateProperty.resolveWith(
+            (states) => states.contains(WidgetState.disabled)
+                ? scheme.onSurface.withValues(alpha: 0.38)
+                : onColor,
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: base.textButtonTheme.style?.copyWith(
+          foregroundColor: WidgetStatePropertyAll(color),
+        ),
+      ),
+      progressIndicatorTheme: base.progressIndicatorTheme.copyWith(
+        color: color,
+      ),
+    );
+  }
+
+  Widget _selectionBody(
+    BuildContext context,
+    DenunciaController controller,
+    Color color,
+  ) {
     if (controller.isLoadingProfessions) {
-      return const LoadingState(message: 'Carregando profissoes...');
+      return const LoadingState(message: 'Carregando profissões...');
     }
     if (controller.loadError != null) {
       return ErrorState(
@@ -135,6 +189,7 @@ class _DenunciaPageState extends State<DenunciaPage> {
       selected: controller.pendingProfession,
       isLoadingForm: controller.isLoadingForm,
       formError: controller.formError,
+      color: color,
       onSelected: controller.selectProfession,
       onContinue: () => _handleProfessionContinue(context, controller),
     );
@@ -152,12 +207,12 @@ class _DenunciaPageState extends State<DenunciaPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          'Ha um rascunho salvo para ${controller.pendingProfession?.nome ?? 'esta profissao'}. Deseja retomar?',
+          'Há um rascunho salvo para ${controller.pendingProfession?.nome ?? 'esta profissão'}. Deseja retomar?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Nao, comecar do zero'),
+            child: const Text('Não, começar do zero'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -208,20 +263,23 @@ class _DenunciaPageState extends State<DenunciaPage> {
     );
   }
 
-  Widget _bottomBar(
-    BuildContext context,
-    DenunciaController controller,
-    Color color,
-  ) {
+  Widget _bottomBar(BuildContext context, DenunciaController controller) {
     return SafeArea(
       top: false,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Color(0xFFE0E8E5))),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF143642).withValues(alpha: 0.08),
+              blurRadius: 18,
+              offset: const Offset(0, -8),
+            ),
+          ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           child: Row(
             children: [
               Expanded(
@@ -255,7 +313,6 @@ class _DenunciaPageState extends State<DenunciaPage> {
               const SizedBox(width: 12),
               Expanded(
                 child: FilledButton(
-                  style: FilledButton.styleFrom(backgroundColor: color),
                   onPressed: controller.isSubmitting
                       ? null
                       : () async {
@@ -273,7 +330,7 @@ class _DenunciaPageState extends State<DenunciaPage> {
                             await showDialog<void>(
                               context: context,
                               builder: (context) => AlertDialog(
-                                title: const Text('Erro ao enviar denuncia'),
+                                title: const Text('Erro ao enviar denúncia'),
                                 content: Text(controller.submitError!),
                                 actions: [
                                   FilledButton(
@@ -287,7 +344,7 @@ class _DenunciaPageState extends State<DenunciaPage> {
                           }
                         },
                   child: Text(
-                    controller.isSummaryStep ? 'Enviar Denuncia' : 'Proximo',
+                    controller.isSummaryStep ? 'Enviar Denúncia' : 'Próximo',
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -335,9 +392,9 @@ class _DenunciaPageState extends State<DenunciaPage> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Sair da denuncia?'),
+        title: const Text('Sair da denúncia?'),
         content: const Text(
-          'O rascunho sera mantido para voce continuar depois.',
+          'O rascunho será mantido para você continuar depois.',
         ),
         actions: [
           TextButton(

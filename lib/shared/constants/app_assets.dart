@@ -1,7 +1,7 @@
 abstract final class AppAssets {
   static const logoSvg = 'assets/icons/logo.svg';
   static const rasterLogo = 'assets/images/protege-saude-logo.jpeg';
-  static const heroFather = 'assets/images/father.jpeg';
+  static const heroFather = 'assets/images/father.png';
   static const ufcgLogo = 'assets/images/ufcg.png';
   static const uepbLogo = 'assets/images/uepb2.png';
 

@@ -69,7 +69,7 @@ class DocumentosController extends ChangeNotifier {
 
   Future<String?> download(GuideDocument document) async {
     if (!canDownload(document)) {
-      return 'Documento sem arquivo disponivel para download.';
+      return 'Documento sem arquivo disponível para download.';
     }
     downloading = {...downloading, document.id};
     notifyListeners();
@@ -100,6 +100,6 @@ class DocumentosController extends ChangeNotifier {
     if (error is DocumentUnavailableException) {
       return error.message;
     }
-    return 'Nao foi possivel carregar os dados. Verifique sua internet e tente novamente.';
+    return 'Não foi possível carregar os dados. Verifique sua internet e tente novamente.';
   }
 }

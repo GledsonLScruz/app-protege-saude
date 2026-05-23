@@ -2,7 +2,7 @@ name: protege_saude
 description: "Aplicativo mobile do ProtegeSaude."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -46,10 +46,14 @@ dependencies:
   path: ^1.9.0
   path_provider: ^2.1.5
   pdf: ^3.11.1
-  printing: ^5.13.4
+  printing: ^5.14.3
   provider: ^6.1.2
   share_plus: ^10.1.2
   url_launcher: ^6.3.1
+
+dependency_overrides:
+  printing:
+    path: third_party/printing
 
 dev_dependencies:
   build_runner: ^2.4.13
@@ -65,7 +69,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -73,7 +76,8 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
-    - assets/documents/
+    - assets/templates/complaint_pdf/complaint-pdf-template.html
+    - assets/templates/complaint_pdf/complaint-pdf-template.css
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -111,4 +115,4 @@ flutter_launcher_icons:
   ios: true
   image_path: assets/icons/icon-512x512.png
   adaptive_icon_foreground: assets/icons/maskable-icon-512x512.png
-  adaptive_icon_background: "#24786B"
+  adaptive_icon_background: "#20695F"

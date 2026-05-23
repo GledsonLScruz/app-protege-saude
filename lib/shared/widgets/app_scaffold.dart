@@ -25,7 +25,7 @@ class AppScaffold extends StatelessWidget {
         title: Text(title),
         actions: actions,
       ),
-      body: SafeArea(child: body),
+      body: SafeArea(top: false, child: body),
       bottomNavigationBar: bottomNavigationBar,
     );
   }

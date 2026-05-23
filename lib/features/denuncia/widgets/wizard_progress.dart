@@ -20,50 +20,244 @@ class WizardProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      child: Column(
-        children: [
-          LinearProgressIndicator(
-            value: titles.isEmpty ? 0 : (currentIndex + 1) / titles.length,
-            minHeight: 4,
-            color: color,
-            backgroundColor: const Color(0xFFE1EAE6),
-          ),
-          SizedBox(
-            height: 68,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              itemCount: titles.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final active = index == currentIndex;
-                final valid = isValid(index);
-                final accessible = isAccessible(index);
-                return ActionChip(
-                  onPressed: accessible ? () => onTap(index) : null,
-                  avatar: Icon(
-                    valid
-                        ? Icons.check_circle_rounded
-                        : active
-                        ? Icons.radio_button_checked_rounded
-                        : Icons.lock_outline_rounded,
-                    color: active || valid ? color : Colors.grey,
-                    size: 18,
+    if (titles.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final activeIndex = currentIndex.clamp(0, titles.length - 1).toInt();
+    final title = titles[activeIndex];
+
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 520;
+            final circleSize = compact ? 34.0 : 42.0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    for (var index = 0; index < titles.length; index++) ...[
+                      _StepDot(
+                        index: index,
+                        title: titles[index],
+                        size: circleSize,
+                        color: color,
+                        active: index == currentIndex,
+                        complete: index < currentIndex,
+                        accessible: isAccessible(index),
+                        onTap: () => onTap(index),
+                      ),
+                      if (index < titles.length - 1)
+                        Expanded(
+                          child: _StepConnector(
+                            active: index < currentIndex,
+                            color: color,
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _ActiveStepLabel(
+                  title: title,
+                  activeIndex: activeIndex,
+                  totalSteps: titles.length,
+                  circleSize: circleSize,
+                  compact: compact,
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ActiveStepLabel extends StatelessWidget {
+  const _ActiveStepLabel({
+    required this.title,
+    required this.activeIndex,
+    required this.totalSteps,
+    required this.circleSize,
+    required this.compact,
+  });
+
+  final String title;
+  final int activeIndex;
+  final int totalSteps;
+  final double circleSize;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textStyle =
+        theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurface,
+          fontWeight: FontWeight.w700,
+        ) ??
+        const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700);
+    final maxLabelWidth = compact ? 132.0 : 180.0;
+
+    return SizedBox(
+      height: compact ? 40 : 24,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final available = constraints.maxWidth;
+          final connectorWidth = totalSteps <= 1
+              ? 0.0
+              : (available - (totalSteps * circleSize)) / (totalSteps - 1);
+          final stepDistance =
+              circleSize + connectorWidth.clamp(0.0, double.infinity);
+          final activeCenter = (circleSize / 2) + (activeIndex * stepDistance);
+          final labelWidth = _measureLabelWidth(
+            context: context,
+            text: title,
+            style: textStyle,
+            maxWidth: maxLabelWidth.clamp(0.0, available),
+          );
+          final preferredLeft = activeCenter - (labelWidth / 2);
+          final maxLeft = available - labelWidth;
+          final left = preferredLeft.clamp(0.0, maxLeft);
+
+          return Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                left: left,
+                width: labelWidth,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  child: Text(
+                    title,
+                    key: ValueKey(title),
+                    maxLines: compact ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: textStyle,
                   ),
-                  label: Text(titles[index], overflow: TextOverflow.ellipsis),
-                  backgroundColor: active
-                      ? color.withValues(alpha: 0.12)
-                      : null,
-                  side: BorderSide(
-                    color: active ? color : const Color(0xFFDDE6E2),
-                  ),
-                );
-              },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  double _measureLabelWidth({
+    required BuildContext context,
+    required String text,
+    required TextStyle style,
+    required double maxWidth,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      maxLines: compact ? 2 : 1,
+      textDirection: Directionality.of(context),
+    )..layout(maxWidth: maxWidth);
+    return (painter.width + 8).clamp(44.0, maxWidth);
+  }
+}
+
+class _StepConnector extends StatelessWidget {
+  const _StepConnector({required this.active, required this.color});
+
+  final bool active;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      height: 4,
+      decoration: BoxDecoration(
+        color: active ? color : Theme.of(context).colorScheme.outlineVariant,
+        borderRadius: BorderRadius.circular(999),
+      ),
+    );
+  }
+}
+
+class _StepDot extends StatelessWidget {
+  const _StepDot({
+    required this.index,
+    required this.title,
+    required this.size,
+    required this.color,
+    required this.active,
+    required this.complete,
+    required this.accessible,
+    required this.onTap,
+  });
+
+  final int index;
+  final String title;
+  final double size;
+  final Color color;
+  final bool active;
+  final bool complete;
+  final bool accessible;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onColor = color.computeLuminance() > 0.45
+        ? theme.colorScheme.onSurface
+        : Colors.white;
+    final fillColor = active || complete ? color : theme.colorScheme.surface;
+    final borderColor = active || complete
+        ? color
+        : theme.colorScheme.outlineVariant;
+    final foreground = active || complete
+        ? onColor
+        : theme.colorScheme.onSurface.withValues(alpha: 0.72);
+
+    return Tooltip(
+      message: title,
+      child: Semantics(
+        button: true,
+        enabled: accessible,
+        selected: active,
+        label: 'Etapa ${index + 1}: $title',
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: accessible ? onTap : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: size,
+            height: size,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: fillColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: borderColor, width: active ? 2 : 1.4),
+              boxShadow: active
+                  ? [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.2),
+                        blurRadius: 14,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Text(
+              '${index + 1}',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

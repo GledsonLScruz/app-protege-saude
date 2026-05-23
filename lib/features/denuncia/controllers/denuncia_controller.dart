@@ -15,6 +15,7 @@ import '../../../shared/services/dynamic_field_validator.dart';
 import '../../../shared/services/pdf_service.dart';
 import '../../../shared/services/photo_service.dart';
 import '../../../shared/services/protocol_generator.dart';
+import '../../../shared/utils/display_text.dart';
 import '../../../shared/utils/text_normalizer.dart';
 
 class DenunciaController extends ChangeNotifier {
@@ -169,7 +170,7 @@ class DenunciaController extends ChangeNotifier {
   Future<void> validateCep() async {
     final digits = onlyDigits(address.cep);
     if (digits.length != 8) {
-      cepError = 'Informe um CEP valido.';
+      cepError = 'Informe um CEP válido.';
       cepMessage = null;
       notifyListeners();
       return;
@@ -240,12 +241,12 @@ class DenunciaController extends ChangeNotifier {
     } on PhotoSelectionException catch (error) {
       return error.message;
     } on Object {
-      return 'Nao foi possivel selecionar fotos. Verifique as permissoes e tente novamente.';
+      return 'Não foi possível selecionar fotos. Verifique as permissões e tente novamente.';
     }
     if (picked.isEmpty) {
       return null;
     }
-    _appendPhotos(field, picked);
+    await _appendPhotos(field, picked);
     return null;
   }
 
@@ -262,10 +263,10 @@ class DenunciaController extends ChangeNotifier {
     } on PhotoSelectionException catch (error) {
       return error.message;
     } on Object {
-      return 'Nao foi possivel capturar a foto. Verifique as permissoes e tente novamente.';
+      return 'Não foi possível capturar a foto. Verifique as permissões e tente novamente.';
     }
     if (photo != null) {
-      _appendPhotos(field, [photo]);
+      await _appendPhotos(field, [photo]);
     }
     return null;
   }
@@ -340,6 +341,9 @@ class DenunciaController extends ChangeNotifier {
   }
 
   Future<ConfirmationRecord?> submit() async {
+    if (isSubmitting) {
+      return null;
+    }
     if (!isStepValid(currentStep)) {
       attemptedAdvance = true;
       _touchCurrentStep();
@@ -434,15 +438,15 @@ class DenunciaController extends ChangeNotifier {
 
   String get currentStepTitle {
     if (!wizardStarted) {
-      return 'Selecione a profissao';
+      return 'Selecione a profissão';
     }
     if (currentStep == 0) {
-      return 'Endereco da Vitima';
+      return 'Endereço da Vítima';
     }
     if (isSummaryStep) {
       return 'Resumo';
     }
-    return currentDynamicStep?.titulo ?? 'Denuncia';
+    return accentPortugueseText(currentDynamicStep?.titulo ?? 'Denúncia');
   }
 
   List<String> get stepTitles {
@@ -451,8 +455,8 @@ class DenunciaController extends ChangeNotifier {
       return const [];
     }
     return [
-      'Endereco da Vitima',
-      ...form.orderedSteps.map((step) => step.titulo),
+      'Endereço da Vítima',
+      ...form.orderedSteps.map((step) => accentPortugueseText(step.titulo)),
       'Resumo',
     ];
   }
@@ -545,7 +549,10 @@ class DenunciaController extends ChangeNotifier {
     return true;
   }
 
-  void _appendPhotos(PublicFormField field, List<PhotoRef> photos) {
+  Future<void> _appendPhotos(
+    PublicFormField field,
+    List<PhotoRef> photos,
+  ) async {
     final key = field.id.toString();
     final current = [...(photoRefs[key] ?? const <PhotoRef>[])];
     photoRefs = {
@@ -553,7 +560,7 @@ class DenunciaController extends ChangeNotifier {
       key: [...current, ...photos],
     };
     _syncPhotoAnswer(field);
-    unawaited(_saveDraft());
+    await _saveDraft();
     notifyListeners();
   }
 
@@ -618,6 +625,6 @@ class DenunciaController extends ChangeNotifier {
     if (error is ApiException) {
       return error.message;
     }
-    return 'Nao foi possivel concluir a operacao. Verifique sua internet e tente novamente.';
+    return 'Não foi possível concluir a operação. Verifique sua internet e tente novamente.';
   }
 }

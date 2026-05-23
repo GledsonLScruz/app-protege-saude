@@ -2,6 +2,7 @@
 
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../utils/display_text.dart';
 import 'json_helpers.dart';
 
 part 'profession.freezed.dart';
@@ -27,6 +28,6 @@ class Profession with _$Profession {
       _$ProfessionFromJson(json);
 
   String get displayDescription => descricao?.trim().isNotEmpty == true
-      ? descricao!.trim()
-      : 'Formulario configurado para esta profissao.';
+      ? accentPortugueseText(descricao!.trim())
+      : 'Formulário configurado para esta profissão.';
 }

@@ -11,6 +11,9 @@ import 'package:protege_saude/shared/models/profession.dart';
 import 'package:protege_saude/shared/models/public_form.dart';
 import 'package:protege_saude/shared/network/api_client.dart';
 import 'package:protege_saude/shared/network/public_api.dart';
+import 'package:protege_saude/shared/persistence/draft_repository.dart';
+import 'package:protege_saude/shared/persistence/draft_sanitizer.dart';
+import 'package:protege_saude/shared/services/complaint_summary_builder.dart';
 import 'package:protege_saude/shared/services/document_file_service.dart';
 import 'package:protege_saude/shared/services/dynamic_field_validator.dart';
 import 'package:protege_saude/shared/services/protocol_generator.dart';
@@ -37,7 +40,7 @@ void main() {
     });
 
     expect(profession.id, 1);
-    expect(profession.displayDescription, contains('Formulario configurado'));
+    expect(profession.displayDescription, contains('Formulário configurado'));
   });
 
   test('parseia formulario publico e ordena passos/campos', () {
@@ -99,7 +102,18 @@ void main() {
       'nome': 'Idade',
       'tipo_campo': 'numero',
     });
-    expect(validator.validateField(number, 'abc'), 'Informe um numero valido.');
+    expect(validator.validateField(number, 'abc'), 'Informe um número válido.');
+
+    final date = PublicFormField.fromJson({
+      'id': 4,
+      'nome': 'Data aproximada',
+      'tipo_campo': 'data',
+    });
+    expect(validator.validateField(date, '21/05/2026'), isNull);
+    expect(
+      validator.validateField(date, '31/02/2026'),
+      'Informe uma data válida.',
+    );
 
     final checkbox = PublicFormField.fromJson({
       'id': 3,
@@ -144,7 +158,7 @@ void main() {
         'valor': true,
         'selecionados': ['bloqueada'],
       }),
-      'Opcao invalida.',
+      'Opção inválida.',
     );
   });
 
@@ -198,6 +212,189 @@ void main() {
     expect(protocol, matches(RegExp(r'^DEN-2026-\d{6}$')));
   });
 
+  test('serializa rascunho em tipos seguros para Hive', () {
+    final json = draftToHiveJson(
+      ComplaintDraft(
+        professionId: 7,
+        address: const ComplaintAddress(
+          cep: '58406-000',
+          rua: 'Rua A',
+          numero: '10',
+        ),
+        dynamicAnswers: {
+          '1': {
+            '2': {
+              'valor': true,
+              'selecionados': ['a', 'b'],
+            },
+          },
+        },
+        photoRefs: {
+          '3': [
+            PhotoRef(
+              id: 'photo-1',
+              name: 'foto.jpg',
+              mimeType: 'image/jpeg',
+              sizeBytes: 123,
+              localPath: '/tmp/foto.jpg',
+              createdAt: DateTime(2026),
+            ),
+          ],
+        },
+        updatedAt: DateTime(2026, 5, 20),
+      ),
+    );
+
+    expect(json['address'], isA<Map<String, dynamic>>());
+    expect((json['address'] as Map<String, dynamic>)['cep'], '58406-000');
+    expect(json['photoRefs'], isA<Map<String, dynamic>>());
+    final photos = (json['photoRefs'] as Map<String, dynamic>)['3'] as List;
+    expect(photos.single, isA<Map<String, dynamic>>());
+    expect(
+      (photos.single as Map<String, dynamic>)['createdAt'],
+      '2026-01-01T00:00:00.000',
+    );
+  });
+
+  test('sanitizacao de rascunho preserva endereco validado', () {
+    final form = PublicForm.fromJson({
+      'profissao': {'id': 7, 'nome': 'Odontologia'},
+      'passos': [
+        {
+          'id': 1,
+          'titulo': 'Dados',
+          'campos': [
+            {'id': 10, 'nome': 'Nome', 'tipo_campo': 'texto'},
+          ],
+        },
+      ],
+    });
+    final draft = ComplaintDraft(
+      professionId: 7,
+      address: const ComplaintAddress(
+        cep: '58407-548',
+        rua: 'Rua Doutor Sebastião Pedrosa',
+        numero: '102',
+        estado: 'PB',
+        cidade: 'Campina Grande',
+        bairro: 'José Pinheiro',
+        conselhoId: 2,
+        conselhoNome: 'Conselho Tutelar Leste',
+        conselhoContato: 'Não informado',
+        conselhoRegiao: 'Leste',
+        validatedCep: '58407-548',
+      ),
+      dynamicAnswers: {
+        '1': {'10': 'Ana'},
+      },
+      updatedAt: DateTime(2026, 5, 21),
+    );
+
+    final sanitized = sanitizeDraft(draft, form);
+
+    expect(sanitized.address?.estado, 'PB');
+    expect(sanitized.address?.cidade, 'Campina Grande');
+    expect(sanitized.address?.bairro, 'José Pinheiro');
+    expect(sanitized.address?.conselhoNome, 'Conselho Tutelar Leste');
+    expect(sanitized.address?.hasValidatedCep, isTrue);
+  });
+
+  test('resumo compartilhado preserva ordem e formata valores', () {
+    final form = PublicForm.fromJson({
+      'profissao': {'id': 7, 'nome': 'Odontologia'},
+      'passos': [
+        {
+          'id': 1,
+          'titulo': 'Ocorrencia',
+          'campos': [
+            {
+              'id': 11,
+              'ordem_index': 2,
+              'nome': 'Data aproximada',
+              'tipo_campo': 'data',
+            },
+            {
+              'id': 10,
+              'ordem_index': 1,
+              'nome': 'Tipo',
+              'tipo_campo': 'radio',
+              'opcoes': [
+                {'valor': 'negligencia', 'label': 'Negligencia'},
+              ],
+            },
+            {
+              'id': 12,
+              'ordem_index': 3,
+              'nome': 'Descricao',
+              'tipo_campo': 'texto',
+            },
+            {
+              'id': 13,
+              'ordem_index': 4,
+              'nome': 'Houve contato?',
+              'tipo_campo': 'switch',
+            },
+            {
+              'id': 14,
+              'ordem_index': 5,
+              'nome': 'Marcas visiveis?',
+              'tipo_campo': 'switch',
+              'opcoes': [
+                {'valor': 'braco', 'label': 'Braco'},
+                {'valor': 'perna', 'label': 'Perna'},
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+    final sections = const ComplaintSummaryBuilder().build(
+      address: const ComplaintAddress(
+        cep: '58406-000',
+        rua: 'Rua A',
+        numero: '10',
+        estado: 'PB',
+        cidade: 'Campina Grande',
+        bairro: 'Centro',
+        conselhoNome: 'Conselho Tutelar Sul',
+      ),
+      form: form,
+      answers: {
+        '1': {
+          '10': 'negligencia',
+          '11': '2026-05-21',
+          '12': '',
+          '13': {'valor': true, 'selecionados': <String>[]},
+          '14': {
+            'valor': true,
+            'selecionados': ['braco'],
+          },
+        },
+      },
+      photos: const {},
+    );
+
+    expect(sections.map((section) => section.title), [
+      'Endereço e Conselho Tutelar',
+      'Ocorrencia',
+    ]);
+    expect(sections.last.items.map((item) => item.label), [
+      'Tipo',
+      'Data aproximada',
+      'Descrição',
+      'Houve contato?',
+      'Marcas visiveis?',
+    ]);
+    expect(sections.last.items.map((item) => item.value), [
+      'Negligencia',
+      '21/05/2026',
+      ComplaintSummaryBuilder.emptyValueText,
+      'Sim',
+      'Sim: Braco',
+    ]);
+  });
+
   test('envio de denuncia monta multipart com PDF e metadados', () async {
     final client = _CapturingApiClient();
     final api = PublicApi(client);
@@ -228,6 +425,8 @@ void main() {
     expect(protocol, 'DEN-2026-654321');
     expect(client.lastPath, 'denuncia');
     expect(client.lastOptions?.contentType, 'multipart/form-data');
+    expect(client.lastOptions?.sendTimeout, const Duration(minutes: 2));
+    expect(client.lastOptions?.receiveTimeout, const Duration(minutes: 1));
     final formData = client.lastData as FormData;
     expect(_field(formData, 'protocolo'), 'DEN-2026-123456');
     expect(_field(formData, 'profissao_id'), '7');

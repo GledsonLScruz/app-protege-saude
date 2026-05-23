@@ -42,7 +42,7 @@ class DraftRepository {
   }
 
   Future<void> saveDraft(ComplaintDraft draft) async {
-    await _drafts.put(_draftKey(draft.professionId), draft.toJson());
+    await _drafts.put(_draftKey(draft.professionId), draftToHiveJson(draft));
   }
 
   Future<void> deleteDraft(int professionId) async {
@@ -75,6 +75,21 @@ class DraftRepository {
   }
 }
 
+Map<String, dynamic> draftToHiveJson(ComplaintDraft draft) {
+  return {
+    'professionId': draft.professionId,
+    'address': draft.address?.toJson(),
+    'dynamicAnswers': draft.dynamicAnswers.map(
+      (stepId, answers) => MapEntry(stepId, _hiveSafeMap(answers)),
+    ),
+    'photoRefs': draft.photoRefs.map(
+      (fieldId, photos) =>
+          MapEntry(fieldId, photos.map((photo) => photo.toJson()).toList()),
+    ),
+    'updatedAt': draft.updatedAt.toIso8601String(),
+  };
+}
+
 Map<String, dynamic> _deepStringMap(Object? value) {
   if (value is Map<String, dynamic>) {
     return value.map((key, val) => MapEntry(key, _normalizeHiveValue(val)));
@@ -85,6 +100,31 @@ Map<String, dynamic> _deepStringMap(Object? value) {
     );
   }
   return <String, dynamic>{};
+}
+
+Map<String, dynamic> _hiveSafeMap(Map<String, dynamic> value) {
+  return value.map((key, val) => MapEntry(key, _hiveSafeValue(val)));
+}
+
+Object? _hiveSafeValue(Object? value) {
+  if (value is ComplaintAddress) {
+    return value.toJson();
+  }
+  if (value is PhotoRef) {
+    return value.toJson();
+  }
+  if (value is DateTime) {
+    return value.toIso8601String();
+  }
+  if (value is Map) {
+    return value.map(
+      (key, val) => MapEntry(key.toString(), _hiveSafeValue(val)),
+    );
+  }
+  if (value is List) {
+    return value.map(_hiveSafeValue).toList();
+  }
+  return value;
 }
 
 Object? _normalizeHiveValue(Object? value) {

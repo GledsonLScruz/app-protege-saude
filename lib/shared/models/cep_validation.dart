@@ -70,7 +70,7 @@ class CepValidationResult with _$CepValidationResult {
       mensagem:
           (json['mensagem'] ??
                   json['message'] ??
-                  'Nao foi possivel validar o CEP informado.')
+                  'Não foi possível validar o CEP informado.')
               .toString(),
     );
   }

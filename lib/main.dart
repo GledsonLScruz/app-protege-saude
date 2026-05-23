@@ -8,7 +8,6 @@ import 'features/denuncia/denuncia_page.dart';
 import 'features/documentos_norteadores/controllers/documentos_controller.dart';
 import 'features/documentos_norteadores/documentos_page.dart';
 import 'features/home/home_page.dart';
-import 'features/pontos_apoio/pontos_apoio_page.dart';
 import 'features/sobre/sobre_page.dart';
 import 'shared/config/api_config.dart';
 import 'shared/constants/app_constants.dart';
@@ -129,11 +128,6 @@ class ProtegeSaudeApp extends StatelessWidget {
             ),
             child: const DocumentosPage(),
           ),
-        ),
-        GoRoute(
-          name: 'pontos-apoio',
-          path: '/pontos-apoio',
-          builder: (context, state) => const PontosApoioPage(),
         ),
         GoRoute(
           name: 'sobre',

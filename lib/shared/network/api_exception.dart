@@ -17,8 +17,8 @@ class ApiException implements Exception {
         (error.type == DioExceptionType.connectionTimeout ||
                 error.type == DioExceptionType.receiveTimeout ||
                 error.type == DioExceptionType.sendTimeout
-            ? 'Tempo de conexao esgotado. Verifique sua internet e tente novamente.'
-            : 'Nao foi possivel conectar ao servidor. Verifique sua internet e tente novamente.');
+            ? 'Tempo de conexão esgotado. Verifique sua internet e tente novamente.'
+            : 'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.');
     return ApiException(
       message,
       statusCode: error.response?.statusCode,

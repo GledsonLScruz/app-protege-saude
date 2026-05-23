@@ -8,7 +8,7 @@ class SearchableSelect<T> extends StatelessWidget {
     required this.itemLabel,
     required this.onSelected,
     this.value,
-    this.placeholder = 'Selecione uma opcao',
+    this.placeholder = 'Selecione uma opção',
     this.enabled = true,
   });
 
@@ -23,23 +23,30 @@ class SearchableSelect<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedLabel = value == null ? placeholder : itemLabel(value as T);
-    return InkWell(
-      onTap: enabled ? () => _showPicker(context) : null,
-      borderRadius: BorderRadius.circular(8),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          suffixIcon: const Icon(Icons.expand_more_rounded),
-          enabled: enabled,
-        ),
-        child: Text(
-          selectedLabel,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: value == null
-                ? Theme.of(context).hintColor
-                : Theme.of(context).colorScheme.onSurface,
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: label,
+      value: selectedLabel,
+      child: InkWell(
+        onTap: enabled ? () => _showPicker(context) : null,
+        borderRadius: BorderRadius.circular(8),
+        child: InputDecorator(
+          decoration: InputDecoration(
+            labelText: label,
+            suffixIcon: const Icon(Icons.expand_more_rounded),
+            enabled: enabled,
+          ),
+          child: Text(
+            selectedLabel,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: value == null
+                  ? Theme.of(context).hintColor
+                  : Theme.of(context).colorScheme.onSurface,
+              fontWeight: value == null ? FontWeight.w500 : FontWeight.w700,
+            ),
           ),
         ),
       ),
@@ -88,45 +95,64 @@ class _SearchableSheetState<T> extends State<_SearchableSheet<T>> {
         )
         .toList();
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 16,
-          right: 16,
-          top: 16,
-          bottom: MediaQuery.viewInsetsOf(context).bottom + 16,
-        ),
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).height * 0.72,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 12),
-              TextField(
-                autofocus: true,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search_rounded),
-                  hintText: 'Buscar',
-                ),
-                onChanged: (value) => setState(() => _query = value),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: filtered.isEmpty
-                    ? const Center(child: Text('Nenhum resultado encontrado.'))
-                    : ListView.separated(
-                        itemCount: filtered.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final item = filtered[index];
-                          return ListTile(
-                            title: Text(widget.itemLabel(item)),
-                            onTap: () => Navigator.of(context).pop(item),
-                          );
-                        },
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: MediaQuery.viewInsetsOf(context).bottom + 16,
+          ),
+          child: SizedBox(
+            height: MediaQuery.sizeOf(context).height * 0.72,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-              ),
-            ],
+                    ),
+                    IconButton(
+                      tooltip: 'Fechar',
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.search_rounded),
+                    hintText: 'Buscar',
+                  ),
+                  onChanged: (value) => setState(() => _query = value),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: filtered.isEmpty
+                      ? const Center(
+                          child: Text('Nenhum resultado encontrado.'),
+                        )
+                      : ListView.separated(
+                          itemCount: filtered.length,
+                          separatorBuilder: (_, _) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final item = filtered[index];
+                            return ListTile(
+                              title: Text(widget.itemLabel(item)),
+                              onTap: () => Navigator.of(context).pop(item),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

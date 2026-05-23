@@ -1,5 +1,6 @@
 import '../models/complaint_models.dart';
 import '../models/public_form.dart';
+import '../utils/date_utils.dart';
 import '../utils/text_normalizer.dart';
 
 class DynamicFieldValidator {
@@ -47,31 +48,31 @@ class DynamicFieldValidator {
     }
     return value?.toString().trim().isNotEmpty == true
         ? null
-        : 'Campo obrigatorio.';
+        : 'Campo obrigatório.';
   }
 
   String? _validateNumber(PublicFormField field, Object? value) {
     final text = value?.toString().trim() ?? '';
     if (text.isEmpty) {
-      return field.isRequired ? 'Campo obrigatorio.' : null;
+      return field.isRequired ? 'Campo obrigatório.' : null;
     }
     return num.tryParse(text.replaceAll(',', '.')) == null
-        ? 'Informe um numero valido.'
+        ? 'Informe um número válido.'
         : null;
   }
 
   String? _validateDate(PublicFormField field, Object? value) {
     final text = value?.toString().trim() ?? '';
     if (text.isEmpty) {
-      return field.isRequired ? 'Campo obrigatorio.' : null;
+      return field.isRequired ? 'Campo obrigatório.' : null;
     }
-    final parsed = DateTime.tryParse(text);
+    final parsed = parseSimpleDate(text);
     if (parsed == null) {
-      return 'Informe uma data valida.';
+      return 'Informe uma data válida.';
     }
     final label = normalizeLooseText('${field.nome} ${field.dica ?? ''}');
     if (label.contains('nascimento') && parsed.isAfter(DateTime.now())) {
-      return 'A data de nascimento nao pode ser futura.';
+      return 'A data de nascimento não pode ser futura.';
     }
     return null;
   }
@@ -79,33 +80,33 @@ class DynamicFieldValidator {
   String? _validateCep(PublicFormField field, Object? value) {
     final digits = onlyDigits(value?.toString() ?? '');
     if (digits.isEmpty) {
-      return field.isRequired ? 'Campo obrigatorio.' : null;
+      return field.isRequired ? 'Campo obrigatório.' : null;
     }
-    return digits.length == 8 ? null : 'Informe um CEP valido.';
+    return digits.length == 8 ? null : 'Informe um CEP válido.';
   }
 
   String? _validateSingleOption(PublicFormField field, Object? value) {
     final selected = value?.toString().trim() ?? '';
     if (selected.isEmpty) {
-      return field.isRequired ? 'Selecione uma opcao.' : null;
+      return field.isRequired ? 'Selecione uma opção.' : null;
     }
-    return _isAllowed(field, selected) ? null : 'Opcao invalida.';
+    return _isAllowed(field, selected) ? null : 'Opção inválida.';
   }
 
   String? _validateMultipleOptions(PublicFormField field, Object? value) {
     final selected = _asStringList(value);
     if (selected.isEmpty) {
-      return field.isRequired ? 'Selecione ao menos uma opcao.' : null;
+      return field.isRequired ? 'Selecione ao menos uma opção.' : null;
     }
     final invalid = selected.any((item) => !_isAllowed(field, item));
-    return invalid ? 'Opcao invalida.' : null;
+    return invalid ? 'Opção inválida.' : null;
   }
 
   String? _validateSwitch(PublicFormField field, Object? value) {
     final map = value is Map ? value : const {};
     final boolValue = map['valor'];
     if (boolValue is! bool) {
-      return field.isRequired ? 'Informe Sim ou Nao.' : null;
+      return field.isRequired ? 'Informe Sim ou Não.' : null;
     }
     if (boolValue) {
       final selected = _asStringList(map['selecionados']);
@@ -114,11 +115,11 @@ class DynamicFieldValidator {
           .toList(growable: false);
       if (allowed.isNotEmpty &&
           selected.any((item) => !allowed.contains(item))) {
-        return 'Opcao invalida.';
+        return 'Opção inválida.';
       }
       if (field.validacoes?.opcoesCondicionaisAceitaMultiplos == false &&
           selected.length > 1) {
-        return 'Selecione apenas uma opcao.';
+        return 'Selecione apenas uma opção.';
       }
     }
     return null;
@@ -131,8 +132,8 @@ class DynamicFieldValidator {
     final max = field.resolvedMaxPhotos;
     if (photos.length > max) {
       return max == 1
-          ? 'Selecione no maximo 1 foto.'
-          : 'Selecione no maximo $max fotos.';
+          ? 'Selecione no máximo 1 foto.'
+          : 'Selecione no máximo $max fotos.';
     }
     return null;
   }

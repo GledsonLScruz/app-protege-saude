@@ -62,12 +62,12 @@ class _AddressStepState extends State<AddressStep> {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
       children: [
         Text(
-          'Endereco da vitima',
+          'Endereço da vítima',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 8),
         const Text(
-          'Se a crianca/adolescente residir fora de Campina Grande, informe o CEP do local onde a violencia ocorreu em Campina Grande.',
+          'Se a criança/adolescente residir fora de Campina Grande, informe o CEP do local onde a violência ocorreu em Campina Grande.',
         ),
         const SizedBox(height: 16),
         TextField(
@@ -78,7 +78,7 @@ class _AddressStepState extends State<AddressStep> {
             labelText: 'CEP',
             counterText: '',
             errorText: widget.showErrors && widget.address.cep.length < 9
-                ? 'Informe um CEP valido.'
+                ? 'Informe um CEP válido.'
                 : widget.cepError,
             suffixIcon: widget.isValidatingCep
                 ? const Padding(
@@ -123,9 +123,9 @@ class _AddressStepState extends State<AddressStep> {
         TextField(
           controller: _numberController,
           decoration: InputDecoration(
-            labelText: 'Numero',
+            labelText: 'Número',
             errorText: widget.showErrors && widget.address.numero.trim().isEmpty
-                ? 'Informe o numero.'
+                ? 'Informe o número.'
                 : null,
           ),
           onChanged: (value) => widget.onAddressChanged(numero: value),
@@ -136,11 +136,6 @@ class _AddressStepState extends State<AddressStep> {
         _ReadonlyField(label: 'Cidade', value: widget.address.cidade),
         const SizedBox(height: 14),
         _ReadonlyField(label: 'Bairro', value: widget.address.bairro),
-        const SizedBox(height: 14),
-        _ReadonlyField(
-          label: 'Conselho Tutelar',
-          value: widget.address.conselhoNome ?? '',
-        ),
       ],
     );
   }

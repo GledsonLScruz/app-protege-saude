@@ -14,16 +14,26 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final card = Card(
-      child: Padding(padding: padding, child: child),
+    final theme = Theme.of(context);
+    final content = Padding(padding: padding, child: child);
+    final card = Material(
+      color: theme.colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.72),
+        ),
+      ),
+      shadowColor: const Color(0xFF0E3A44).withValues(alpha: 0.08),
+      elevation: 1,
+      child: onTap == null
+          ? content
+          : InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(8),
+              child: content,
+            ),
     );
-    if (onTap == null) {
-      return card;
-    }
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: card,
-    );
+    return card;
   }
 }

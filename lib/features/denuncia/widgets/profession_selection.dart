@@ -11,6 +11,7 @@ class ProfessionSelection extends StatelessWidget {
     required this.selected,
     required this.isLoadingForm,
     required this.formError,
+    required this.color,
     required this.onSelected,
     required this.onContinue,
   });
@@ -19,6 +20,7 @@ class ProfessionSelection extends StatelessWidget {
   final Profession? selected;
   final bool isLoadingForm;
   final String? formError;
+  final Color color;
   final ValueChanged<Profession> onSelected;
   final VoidCallback onContinue;
 
@@ -27,19 +29,21 @@ class ProfessionSelection extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        Text(
+          'Comece pela sua área de atuação',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'O formulário se adapta à profissão para pedir somente as informações necessárias.',
+        ),
+        const SizedBox(height: 16),
         SectionCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Nova denuncia',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              const Text('O conteudo da denuncia e configurado por profissao.'),
-              const SizedBox(height: 16),
               SearchableSelect<Profession>(
-                label: 'Profissao',
+                label: 'Profissão',
                 items: professions,
                 itemLabel: (profession) => profession.nome,
                 value: selected,
@@ -58,12 +62,42 @@ class ProfessionSelection extends StatelessWidget {
               ],
               if (selected != null) ...[
                 const SizedBox(height: 16),
-                Text(
-                  selected!.nome,
-                  style: Theme.of(context).textTheme.titleMedium,
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: color.withValues(alpha: 0.28)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                selected!.nome,
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(selected!.displayDescription),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Text(selected!.displayDescription),
               ],
               const SizedBox(height: 20),
               FilledButton.icon(

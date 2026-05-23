@@ -1,1 +1,1 @@
-{"version":2,"entries":[{"package":"protege_saude","rootUri":"../","packageUri":"lib/"}]}
+{"version":2,"entries":[{"package":"printing","rootUri":"../third_party/printing/","packageUri":"lib/"},{"package":"protege_saude","rootUri":"../","packageUri":"lib/"}]}

@@ -11,6 +11,9 @@ import '../models/complaint_models.dart';
 class PhotoService {
   PhotoService({ImagePicker? picker}) : _picker = picker ?? ImagePicker();
 
+  static const _maxPhotoDimension = 1600.0;
+  static const _imageQuality = 82;
+
   final ImagePicker _picker;
 
   Future<List<PhotoRef>> pickFromGallery({required int remainingSlots}) async {
@@ -19,11 +22,21 @@ class PhotoService {
     }
     try {
       final file = remainingSlots == 1
-          ? await _picker.pickImage(source: ImageSource.gallery)
+          ? await _picker.pickImage(
+              source: ImageSource.gallery,
+              maxWidth: _maxPhotoDimension,
+              maxHeight: _maxPhotoDimension,
+              imageQuality: _imageQuality,
+            )
           : null;
       final files = remainingSlots == 1
           ? [?file]
-          : await _picker.pickMultiImage(limit: remainingSlots);
+          : await _picker.pickMultiImage(
+              limit: remainingSlots,
+              maxWidth: _maxPhotoDimension,
+              maxHeight: _maxPhotoDimension,
+              imageQuality: _imageQuality,
+            );
       final limited = files.take(remainingSlots);
       final refs = <PhotoRef>[];
       for (final file in limited) {
@@ -37,14 +50,19 @@ class PhotoService {
       );
     } on FileSystemException catch (_) {
       throw const PhotoSelectionException(
-        'Nao foi possivel salvar a foto selecionada. Tente novamente.',
+        'Não foi possível salvar a foto selecionada. Tente novamente.',
       );
     }
   }
 
   Future<PhotoRef?> captureFromCamera() async {
     try {
-      final file = await _picker.pickImage(source: ImageSource.camera);
+      final file = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: _maxPhotoDimension,
+        maxHeight: _maxPhotoDimension,
+        imageQuality: _imageQuality,
+      );
       if (file == null) {
         return null;
       }
@@ -56,7 +74,7 @@ class PhotoService {
       );
     } on FileSystemException catch (_) {
       throw const PhotoSelectionException(
-        'Nao foi possivel salvar a foto capturada. Tente novamente.',
+        'Não foi possível salvar a foto capturada. Tente novamente.',
       );
     }
   }
@@ -117,14 +135,14 @@ class PhotoSelectionException implements Exception {
     if (isPermissionDenied) {
       final target = source == PhotoSource.camera ? 'camera' : 'galeria';
       return PhotoSelectionException(
-        'Permissao para acessar a $target foi negada. Autorize o acesso nas configuracoes do sistema e tente novamente.',
+        'Permissão para acessar a $target foi negada. Autorize o acesso nas configurações do sistema e tente novamente.',
       );
     }
     final action = source == PhotoSource.camera
         ? 'capturar a foto'
         : 'selecionar fotos da galeria';
     return PhotoSelectionException(
-      'Nao foi possivel $action. Tente novamente.',
+      'Não foi possível $action. Tente novamente.',
     );
   }
 

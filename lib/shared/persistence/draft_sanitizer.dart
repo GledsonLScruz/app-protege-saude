@@ -38,16 +38,6 @@ ComplaintDraft sanitizeDraft(ComplaintDraft draft, PublicForm form) {
   }
 
   return draft.copyWith(
-    address: draft.address?.copyWith(
-      validatedCep: null,
-      estado: '',
-      cidade: '',
-      bairro: '',
-      conselhoId: null,
-      conselhoNome: null,
-      conselhoContato: null,
-      conselhoRegiao: null,
-    ),
     dynamicAnswers: answers,
     photoRefs: photos,
     updatedAt: DateTime.now(),

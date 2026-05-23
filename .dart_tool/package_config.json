@@ -645,7 +645,7 @@
     },
     {
       "name": "printing",
-      "rootUri": "file:///Users/gledsoncruz/.pub-cache/hosted/pub.dev/printing-5.14.3",
+      "rootUri": "../third_party/printing",
       "packageUri": "lib/",
       "languageVersion": "3.3"
     },

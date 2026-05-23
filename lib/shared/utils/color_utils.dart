@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
 
-Color parseHexColor(String? value, {Color fallback = const Color(0xFF24786B)}) {
+Color parseHexColor(String? value, {Color fallback = const Color(0xFF20695F)}) {
   final raw = value?.trim();
   if (raw == null || raw.isEmpty) {
     return fallback;

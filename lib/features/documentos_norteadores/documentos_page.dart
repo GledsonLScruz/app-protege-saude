@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../shared/models/guide_document.dart';
 import '../../shared/models/profession.dart';
 import '../../shared/services/external_actions.dart';
-import '../../shared/utils/color_utils.dart';
+import '../../shared/utils/display_text.dart';
 import '../../shared/widgets/app_scaffold.dart';
 import '../../shared/widgets/async_state_widgets.dart';
 import '../../shared/widgets/searchable_select.dart';
@@ -39,7 +39,7 @@ class _DocumentosPageState extends State<DocumentosPage> {
       body: Consumer<DocumentosController>(
         builder: (context, controller, _) {
           if (controller.isLoadingProfessions) {
-            return const LoadingState(message: 'Carregando profissoes...');
+            return const LoadingState(message: 'Carregando profissões...');
           }
           if (controller.professionsError != null) {
             return ErrorState(
@@ -61,21 +61,20 @@ class _DocumentBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = parseHexColor(controller.selectedProfession?.cor);
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       children: [
         Text(
-          'Biblioteca de Documentos Legais',
-          style: Theme.of(context).textTheme.titleLarge,
+          'Biblioteca de documentos',
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
         const Text(
-          'Acesso a documentos importantes com foco em artigos especificos relevantes para profissionais.',
+          'Encontre leis e referências por profissão, com pontos de foco para consulta rápida.',
         ),
         const SizedBox(height: 16),
         SearchableSelect<Profession>(
-          label: 'Profissao',
+          label: 'Profissão',
           items: controller.professions,
           itemLabel: (profession) => profession.nome,
           value: controller.selectedProfession,
@@ -84,7 +83,7 @@ class _DocumentBody extends StatelessWidget {
         const SizedBox(height: 18),
         if (controller.selectedProfession == null)
           const SectionCard(
-            child: Text('Selecione uma profissao para visualizar documentos.'),
+            child: Text('Selecione uma profissão para visualizar documentos.'),
           )
         else if (controller.isLoadingDocuments)
           const SizedBox(
@@ -104,7 +103,7 @@ class _DocumentBody extends StatelessWidget {
           const SectionCard(child: Text('Nenhum documento encontrado.'))
         else
           for (final document in controller.documents) ...[
-            _DocumentCard(document: document, color: color),
+            _DocumentCard(document: document),
             const SizedBox(height: 12),
           ],
       ],
@@ -113,17 +112,15 @@ class _DocumentBody extends StatelessWidget {
 }
 
 class _DocumentCard extends StatelessWidget {
-  const _DocumentCard({required this.document, required this.color});
+  const _DocumentCard({required this.document});
 
   final GuideDocument document;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<DocumentosController>();
     final actions = context.read<ExternalActions>();
     final coverUrl = controller.normalizeUrl(document.fotoCapa);
-    final coverAsset = controller.coverAssetFor(document);
     final downloadedPath = controller.downloadedPaths[document.id];
     final isDownloading = controller.downloading.contains(document.id);
     final canDownload = controller.canDownload(document);
@@ -135,24 +132,27 @@ class _DocumentCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: SizedBox(
-              height: 170,
+              height: 184,
               width: double.infinity,
               child: coverUrl.isNotEmpty
                   ? Image.network(
                       coverUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) => _coverFallback(coverAsset),
+                      errorBuilder: (_, _, _) => _coverFallback(),
                     )
-                  : _coverFallback(coverAsset),
+                  : _coverFallback(),
             ),
           ),
           const SizedBox(height: 12),
-          Text(document.titulo, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            accentPortugueseText(document.titulo),
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 6),
           Text(
             document.descricao?.trim().isNotEmpty == true
-                ? document.descricao!
-                : 'Sem descricao disponivel.',
+                ? accentPortugueseText(document.descricao!)
+                : 'Sem descrição disponível.',
           ),
           if (document.pontosFoco.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -166,8 +166,8 @@ class _DocumentCard extends StatelessWidget {
             for (final point in document.pontosFoco)
               Text(
                 point.pagina == null
-                    ? '- ${point.titulo}'
-                    : '- ${point.titulo} (pagina ${point.pagina})',
+                    ? '- ${accentPortugueseText(point.titulo)}'
+                    : '- ${accentPortugueseText(point.titulo)} (página ${point.pagina})',
               ),
           ],
           const SizedBox(height: 14),
@@ -183,7 +183,6 @@ class _DocumentCard extends StatelessWidget {
                 ),
               if (canDownload)
                 FilledButton.icon(
-                  style: FilledButton.styleFrom(backgroundColor: color),
                   onPressed: isDownloading
                       ? null
                       : () async {
@@ -207,7 +206,7 @@ class _DocumentCard extends StatelessWidget {
                             return;
                           }
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Download concluido')),
+                            const SnackBar(content: Text('Download concluído')),
                           );
                         },
                   icon: isDownloading
@@ -232,13 +231,16 @@ class _DocumentCard extends StatelessWidget {
     );
   }
 
-  Widget _coverFallback(String? asset) {
-    if (asset != null) {
-      return Image.asset(asset, fit: BoxFit.cover);
-    }
+  Widget _coverFallback() {
     return Container(
-      color: const Color(0xFFE7EFEC),
-      child: const Center(child: Text('Sem capa')),
+      color: const Color(0xFFE3F1EF),
+      child: const Center(
+        child: Icon(
+          Icons.menu_book_rounded,
+          size: 42,
+          color: Color(0xFF20695F),
+        ),
+      ),
     );
   }
 }

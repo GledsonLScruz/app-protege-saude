@@ -1,0 +1,236 @@
+:root {
+  color: #1f2933;
+  background: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: #ffffff;
+}
+
+body {
+  color: #1f2933;
+  line-height: 1.45;
+}
+
+.complaint-report {
+  width: 794px;
+  min-height: 1123px;
+  padding: 48px 56px 40px;
+  background: #ffffff;
+}
+
+.complaint-report__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 20px;
+  border-bottom: 4px solid #fbc02d;
+}
+
+.complaint-report__eyebrow {
+  margin: 0 0 6px;
+  color: #7b5b00;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.complaint-report h1 {
+  margin: 0;
+  color: #17202a;
+  font-size: 28px;
+  line-height: 1.12;
+}
+
+.complaint-report__summary span {
+  display: block;
+  margin-bottom: 3px;
+  color: #687584;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.complaint-report__summary strong {
+  color: #17202a;
+  font-size: 12px;
+}
+
+.complaint-report__summary {
+  display: grid;
+  grid-template-columns: 1fr 170px;
+  gap: 14px;
+  margin: 18px 0 26px;
+}
+
+.complaint-report__summary > div {
+  min-height: 58px;
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f8fafc;
+}
+
+.complaint-report__sections {
+  display: grid;
+  gap: 22px;
+}
+
+.complaint-section {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.complaint-section__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  color: #17202a;
+  font-size: 17px;
+  line-height: 1.25;
+}
+
+.complaint-section__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fbc02d;
+  color: #17202a;
+  font-size: 12px;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.complaint-section__description {
+  margin: 0 0 12px 38px;
+  color: #52606d;
+  font-size: 12px;
+}
+
+.complaint-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  overflow: hidden;
+  border: 1px solid #d9e2ec;
+  border-radius: 6px;
+}
+
+.complaint-table th {
+  padding: 10px 12px;
+  background: #fbc02d;
+  color: #17202a;
+  font-size: 11px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.complaint-table th:first-child,
+.complaint-table td:first-child {
+  width: 36%;
+}
+
+.complaint-table td {
+  padding: 10px 12px;
+  border-top: 1px solid #d9e2ec;
+  color: #344054;
+  font-size: 12px;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.complaint-table tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.complaint-photo-group {
+  margin-top: 14px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.complaint-photo-group__label {
+  margin: 0 0 8px;
+  color: #17202a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.complaint-photo-group__empty {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  color: #687584;
+  background: #f8fafc;
+}
+
+.complaint-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.complaint-photo-card {
+  min-height: 170px;
+  padding: 8px;
+  border: 1px solid #d9e2ec;
+  border-radius: 6px;
+  background: #ffffff;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.complaint-photo-card img {
+  display: block;
+  width: 100%;
+  height: 132px;
+  object-fit: contain;
+  background: #f8fafc;
+  border-radius: 4px;
+}
+
+.complaint-photo-card figcaption {
+  margin-top: 7px;
+  color: #52606d;
+  font-size: 10px;
+  word-break: break-word;
+}
+
+.complaint-report__footer {
+  margin-top: 30px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  color: #687584;
+  font-size: 10px;
+  text-align: center;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  .complaint-report {
+    width: 794px;
+    min-height: auto;
+    padding: 0 56px;
+  }
+}

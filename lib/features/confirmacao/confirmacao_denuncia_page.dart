@@ -21,8 +21,8 @@ class ConfirmacaoDenunciaPage extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const AppScaffold(
-            title: 'Confirmacao',
-            body: LoadingState(message: 'Carregando confirmacao...'),
+            title: 'Confirmação',
+            body: LoadingState(message: 'Carregando confirmação...'),
           );
         }
         final record = snapshot.data;
@@ -49,21 +49,39 @@ class _ConfirmationContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final actions = context.read<ExternalActions>();
     return AppScaffold(
-      title: 'Confirmacao',
+      title: 'Confirmação',
       canPop: false,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 28, 16, 32),
         children: [
-          Icon(
-            Icons.check_circle_rounded,
-            color: Theme.of(context).colorScheme.primary,
-            size: 72,
+          Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Icon(
+                  Icons.check_circle_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 54,
+                ),
+              ),
+            ),
           ),
           const SizedBox(height: 12),
           Text(
-            'Denuncia enviada com sucesso',
+            'Denúncia enviada com sucesso',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'O protocolo foi gerado e o PDF está disponível para consulta.',
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
           SectionCard(
@@ -71,7 +89,7 @@ class _ConfirmationContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _Info(label: 'Protocolo', value: record.protocol),
-                _Info(label: 'Profissao', value: record.professionName),
+                _Info(label: 'Profissão', value: record.professionName),
                 if (record.councilName?.isNotEmpty == true)
                   _Info(label: 'Conselho', value: record.councilName!),
                 _Info(
@@ -80,7 +98,7 @@ class _ConfirmationContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Guarde o protocolo para acompanhar ou referenciar a denuncia junto aos orgaos responsaveis.',
+                  'Guarde o protocolo para acompanhar ou referenciar a denúncia junto aos órgãos responsáveis.',
                 ),
               ],
             ),
@@ -92,13 +110,18 @@ class _ConfirmationContent extends StatelessWidget {
             label: const Text('Abrir PDF'),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => actions.shareFile(
-              record.pdfPath,
-              text: 'Denuncia ${record.protocol}',
+          Builder(
+            builder: (context) => OutlinedButton.icon(
+              onPressed: () => actions.shareFile(
+                record.pdfPath,
+                text: 'Denúncia ${record.protocol}',
+                sharePositionOrigin: ExternalActions.sharePositionOrigin(
+                  context,
+                ),
+              ),
+              icon: const Icon(Icons.ios_share_rounded),
+              label: const Text('Compartilhar PDF'),
             ),
-            icon: const Icon(Icons.ios_share_rounded),
-            label: const Text('Compartilhar PDF'),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
@@ -110,12 +133,12 @@ class _ConfirmationContent extends StatelessWidget {
           FilledButton.icon(
             onPressed: () => context.pushReplacement('/denuncia'),
             icon: const Icon(Icons.add_rounded),
-            label: const Text('Nova denuncia'),
+            label: const Text('Nova denúncia'),
           ),
           const SizedBox(height: 8),
           TextButton(
             onPressed: () => _popOrHome(context),
-            child: const Text('Voltar ao inicio'),
+            child: const Text('Voltar ao início'),
           ),
         ],
       ),
