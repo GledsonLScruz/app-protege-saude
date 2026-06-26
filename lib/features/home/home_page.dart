@@ -27,8 +27,6 @@ class HomePage extends StatelessWidget {
           children: [
             _HeroPanel(onReport: () => _showAnonymousDialog(context)),
             const SizedBox(height: 16),
-            _EmergencyContacts(actions: actions),
-            const SizedBox(height: 16),
             Text(
               'Acesso rápido',
               style: Theme.of(context).textTheme.titleLarge,
@@ -36,24 +34,27 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 10),
             _ActionCard(
               icon: Icons.report_problem_rounded,
-              title: 'Realizar uma denúncia',
+              title: 'Realizar denúncia',
               description:
-                  'Reportar casos suspeitos de violência e maus-tratos.',
+                  'Reportar suspeitas e casos confirmados de violência infantojuvenil.',
               onTap: () => _showAnonymousDialog(context),
               primary: true,
             ),
             _ActionCard(
               icon: Icons.menu_book_rounded,
-              title: 'Documentos Norteadores',
-              description: 'Consultar documentos legais por profissão.',
+              title: 'Documentos norteadores',
+              description:
+                  'Consultar documentos legais que regem a obrigatoriedade por profissão.',
               onTap: () => context.push('/documentos-norteadores'),
             ),
             _ActionCard(
               icon: Icons.info_rounded,
-              title: 'Sobre o ProtegeSaude',
-              description: 'Conhecer origem, parcerias e desenvolvimento.',
+              title: 'Sobre o Protege Saúde',
+              description: '',
               onTap: () => context.push('/sobre'),
             ),
+            const SizedBox(height: 16),
+            _EmergencyContacts(actions: actions),
             const SizedBox(height: 16),
             _FaqSection(key: _faqKey),
             const SizedBox(height: 16),
@@ -102,7 +103,7 @@ class _HeroPanel extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: SizedBox(
-        height: 292,
+        height: 350,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -137,7 +138,7 @@ class _HeroPanel extends StatelessWidget {
                         vertical: 6,
                       ),
                       child: Text(
-                        'Denúncia anônima e orientada',
+                        'Denúncia anônima',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w800,
@@ -147,14 +148,14 @@ class _HeroPanel extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'ProtegeSaude',
+                    'Protege Saúde',
                     style: Theme.of(
                       context,
                     ).textTheme.headlineMedium?.copyWith(color: Colors.white),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Apoio simples para profissionais registrarem suspeitas de violência contra crianças e adolescentes.',
+                    'Como profissional da Saúde você tem um papel fundamental para a identificação de sinais de violência infantojuvenil. Use nossa plataforma para reportar anonimamente casos suspeitos e ajudar a proteger quem mais precisa.',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Colors.white.withValues(alpha: 0.94),
                     ),
@@ -312,32 +313,32 @@ class _FaqSection extends StatelessWidget {
   Widget build(BuildContext context) {
     const items = [
       (
-        'Como faço para registrar uma denúncia?',
-        'Para registrar uma denúncia, toque em Realizar uma denúncia e siga o fluxo. Todas as denúncias são tratadas com sigilo.',
+        "Como faço para registrar uma denúncia?",
+        'Para registrar uma denúncia, clique no botão "Realizar Denúncia" no topo da página, selecione sua profissão e prossiga com a denúncia. Não se preocupe, todas as denúncias são anônimas e tratadas com total sigilo.',
       ),
       (
-        'Minha identidade será mantida em sigilo?',
-        'Sim. A denúncia no ProtegeSaude é anônima, e as informações fornecidas são usadas apenas para encaminhamento do caso.',
+        "Minha identidade será mantida em sigilo?",
+        "Sim, nós garantimos total sigilo da sua identidade. Sua privacidade é nossa prioridade, e todas as informações fornecidas são tratadas com absoluta confidencialidade.",
       ),
       (
-        'Que tipos de casos posso denunciar?',
-        'Qualquer suspeita de violência ou maus-tratos contra crianças e adolescentes, incluindo violência física, psicológica, negligência, abuso, violência doméstica e outras formas de agressão.',
+        "Que tipos de casos posso denunciar?",
+        "Você pode denunciar qualquer suspeita ou caso confirmado de violência ou maus-tratos contra crianças e adolescentes identificados durante o atendimento, incluindo: violência física, psicológica, negligência, violência doméstica e demais formas de agressão.",
       ),
       (
-        'Como identificar sinais de violência?',
-        'Fique atento a lesões inexplicadas, marcas recorrentes, comportamento muito ansioso ou temeroso, explicações inconsistentes sobre machucados e relutância em responder perguntas.',
+        "Como identificar sinais de violência?",
+        "Fique atento a sinais como: lesões inexplicadas, marcas recorrentes, comportamento extremamente ansioso ou temeroso do paciente, inconsistências nas explicações sobre lesões, e relutância em responder a perguntas sobre machucados.",
       ),
       (
-        'O que acontece após fazer uma denúncia?',
-        'A denúncia é encaminhada ao Conselho Tutelar responsável, que avaliará as informações e adotará as providências cabíveis.',
+        "O que acontece após realizar uma denúncia?",
+        "Nós forneceremos o protocolo da sua denúncia - que servirá para futuras consultas do andamento do caso, se for da vontade do denunciante. A denúncia terá sido enviada ao Conselho Tutelar responsável pelo endereço fornecido na denúncia, o qual tomará as providências necessárias para investigar e proteger a possível vítima.",
       ),
       (
-        'Preciso ter certeza absoluta para fazer uma denúncia?',
-        'Não. Se houver suspeita fundamentada, a denúncia pode ser feita. Os órgãos competentes são responsáveis por investigar e confirmar os fatos.',
+        "Preciso ter certeza absoluta para fazer uma denúncia?",
+        "Não é necessário ter certeza absoluta. Se houver suspeita fundamentada, é importante realizar a denúncia. Os órgãos competentes são responsáveis por investigar e confirmar as suspeitas.",
       ),
       (
-        'Por que não há detalhamento pericial das partes do corpo?',
-        'Porque o ProtegeSaude é uma ferramenta de apoio à denúncia, não um recurso para realização de perícia das lesões observadas.',
+        'Por que não há mais detalhamento nas perguntas do formulário de denúncia?',
+        "Porque este canal de denúncia trata-se de um meio para denunciar casos de violência infantojuvenil, e não um recurso para a realização de perícia das lesões observadas.",
       ),
     ];
     return SectionCard(

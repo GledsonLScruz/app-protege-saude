@@ -4,11 +4,7 @@ class ApiConfig {
   const ApiConfig({required this.baseUrl});
 
   factory ApiConfig.fromEnvironment() {
-    const value = String.fromEnvironment(
-      'API_BASE_URL',
-      defaultValue: AppConstants.defaultApiBaseUrl,
-    );
-    return ApiConfig(baseUrl: value);
+    return ApiConfig(baseUrl: "https://api.protegesaude.gledsoncruz.com/api/");
   }
 
   final String baseUrl;

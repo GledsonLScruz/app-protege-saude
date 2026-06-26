@@ -32,7 +32,7 @@ class SobrePage extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         children: [
           Text(
-            'Sobre o ProtegeSaude',
+            'Sobre o Protege Saúde',
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
@@ -43,25 +43,21 @@ class SobrePage extends StatelessWidget {
           const _InfoCard(
             title: 'Nossa Origem',
             text:
-                'O ProtegeSaude nasceu de um projeto de extensão do curso de Odontologia da UEPB, visando criar uma ferramenta para auxiliar profissionais de saúde na identificação e denúncia de casos de maus-tratos e violência contra crianças e adolescentes.',
+                'O Protege Saúde nasceu de um projeto de pesquisa do curso de Odontologia da UEPB, visando criar uma ferramenta para auxiliar profissionais da Saúde na identificação de violência contra crianças e adolescentes.',
           ),
           const _PartnersCard(),
-          const _InfoCard(
-            title: 'Desenvolvimento',
-            text:
-                'Desenvolvido por Huandrey Pontes, estudante da UFCG, como parte de seu TCC, aplicando teorias de UI para atender às necessidades dos profissionais de saúde.',
-          ),
+
           _InfoCard(
             title: 'Código Aberto',
             text:
-                'O ProtegeSaude é um projeto de código aberto, permitindo que a comunidade contribua para seu desenvolvimento e melhoria contínua.',
+                'O Protege Saúde é um projeto de código aberto, permitindo que a comunidade contribua para seu desenvolvimento e melhoria contínuos.',
             buttonLabel: 'Abrir GitHub',
             onPressed: () => actions.openUrl(AppConstants.githubUrl),
           ),
           _InfoCard(
             title: 'Processo Criativo',
             text:
-                'O processo criativo por trás do desenvolvimento do ProtegeSaude está documentado e disponível para visualização.',
+                'O processo criativo por trás do desenvolvimento do Protege Saúde está documentado e disponível para visualização.',
             buttonLabel: 'Abrir YouTube',
             onPressed: () => actions.openUrl(AppConstants.creativeProcessUrl),
           ),
@@ -75,12 +71,12 @@ class SobrePage extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.ios_share_rounded),
-              label: const Text('Compartilhar o ProtegeSaude'),
+              label: const Text('Compartilhar o Protege Saúde'),
             ),
           ),
           const SizedBox(height: 18),
           const Text(
-            'Todos os direitos reservados (c) ProtegeSaude 2024',
+            'Todos os direitos reservados (c) Protege Saúde 2026',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 12),
           ),
