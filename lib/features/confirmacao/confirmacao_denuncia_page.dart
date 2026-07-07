@@ -10,6 +10,8 @@ import '../../shared/widgets/app_scaffold.dart';
 import '../../shared/widgets/async_state_widgets.dart';
 import '../../shared/widgets/section_card.dart';
 
+const _feedbackFormUrl = 'https://forms.gle/w5mmUvYX5vVS4Ufw7';
+
 class ConfirmacaoDenunciaPage extends StatelessWidget {
   const ConfirmacaoDenunciaPage({super.key});
 
@@ -40,10 +42,55 @@ class ConfirmacaoDenunciaPage extends StatelessWidget {
   }
 }
 
-class _ConfirmationContent extends StatelessWidget {
+class _ConfirmationContent extends StatefulWidget {
   const _ConfirmationContent({required this.record});
 
   final ConfirmationRecord record;
+
+  @override
+  State<_ConfirmationContent> createState() => _ConfirmationContentState();
+}
+
+class _ConfirmationContentState extends State<_ConfirmationContent> {
+  bool _didShowFeedbackDialog = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _showFeedbackDialog();
+      }
+    });
+  }
+
+  Future<void> _showFeedbackDialog() async {
+    if (_didShowFeedbackDialog) {
+      return;
+    }
+    _didShowFeedbackDialog = true;
+
+    final shouldOpenForm = await showDialog<bool>(
+      context: context,
+      builder: (context) => const _PlatformFeedbackDialog(),
+    );
+    if (!mounted || shouldOpenForm != true) {
+      return;
+    }
+
+    try {
+      await context.read<ExternalActions>().openUrl(_feedbackFormUrl);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível abrir o formulário de avaliação.'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,13 +135,13 @@ class _ConfirmationContent extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _Info(label: 'Protocolo', value: record.protocol),
-                _Info(label: 'Profissão', value: record.professionName),
-                if (record.councilName?.isNotEmpty == true)
-                  _Info(label: 'Conselho', value: record.councilName!),
+                _Info(label: 'Protocolo', value: widget.record.protocol),
+                _Info(label: 'Profissão', value: widget.record.professionName),
+                if (widget.record.councilName?.isNotEmpty == true)
+                  _Info(label: 'Conselho', value: widget.record.councilName!),
                 _Info(
                   label: 'Enviado em',
-                  value: formatDateTimeBr(record.sentAt),
+                  value: formatDateTimeBr(widget.record.sentAt),
                 ),
                 const SizedBox(height: 8),
                 const Text(
@@ -105,7 +152,7 @@ class _ConfirmationContent extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
-            onPressed: () => actions.openFile(record.pdfPath),
+            onPressed: () => actions.openFile(widget.record.pdfPath),
             icon: const Icon(Icons.picture_as_pdf_rounded),
             label: const Text('Abrir PDF'),
           ),
@@ -113,8 +160,8 @@ class _ConfirmationContent extends StatelessWidget {
           Builder(
             builder: (context) => OutlinedButton.icon(
               onPressed: () => actions.shareFile(
-                record.pdfPath,
-                text: 'Denúncia ${record.protocol}',
+                widget.record.pdfPath,
+                text: 'Denúncia ${widget.record.protocol}',
                 sharePositionOrigin: ExternalActions.sharePositionOrigin(
                   context,
                 ),
@@ -125,7 +172,7 @@ class _ConfirmationContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: () => actions.printPdf(record.pdfPath),
+            onPressed: () => actions.printPdf(widget.record.pdfPath),
             icon: const Icon(Icons.print_rounded),
             label: const Text('Salvar/Exportar PDF'),
           ),
@@ -142,6 +189,68 @@ class _ConfirmationContent extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PlatformFeedbackDialog extends StatelessWidget {
+  const _PlatformFeedbackDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return AlertDialog(
+      titlePadding: const EdgeInsets.fromLTRB(24, 12, 8, 0),
+      contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      title: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 28, left: 24),
+              child: Text(
+                'Avalie nossa plataforma',
+                textAlign: TextAlign.center,
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Fechar',
+            onPressed: () => Navigator.of(context).pop(false),
+            icon: const Icon(Icons.close_rounded),
+          ),
+        ],
+      ),
+      content: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Sua opinião é muito importante para continuarmos melhorando!',
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 12),
+          Text(
+            'Leva menos de 3 minutos para responder.',
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+      actionsAlignment: MainAxisAlignment.center,
+      actionsOverflowAlignment: OverflowBarAlignment.center,
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Avaliar agora'),
+        ),
+        OutlinedButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Mais tarde'),
+        ),
+      ],
     );
   }
 }
