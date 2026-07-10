@@ -22,6 +22,8 @@ class DenunciaPage extends StatefulWidget {
 }
 
 class _DenunciaPageState extends State<DenunciaPage> {
+  static const _keyboardAnimationDuration = Duration(milliseconds: 220);
+
   @override
   void initState() {
     super.initState();
@@ -264,92 +266,100 @@ class _DenunciaPageState extends State<DenunciaPage> {
   }
 
   Widget _bottomBar(BuildContext context, DenunciaController controller) {
-    return SafeArea(
-      top: false,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    return AnimatedPadding(
+      key: const ValueKey('denunciaKeyboardAwareBottomBarPadding'),
+      duration: _keyboardAnimationDuration,
+      curve: Curves.easeOutCubic,
+      padding: EdgeInsets.only(bottom: keyboardInset),
+      child: SafeArea(
+        top: false,
+        maintainBottomViewPadding: true,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
 
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF143642).withValues(alpha: 0.08),
-              blurRadius: 18,
-              offset: const Offset(0, -8),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: controller.isSubmitting
-                      ? null
-                      : () async {
-                          if (controller.currentStep == 0) {
-                            final canExit = await _confirmExit(
-                              context,
-                              controller,
-                            );
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF143642).withValues(alpha: 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, -8),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: controller.isSubmitting
+                        ? null
+                        : () async {
+                            if (controller.currentStep == 0) {
+                              final canExit = await _confirmExit(
+                                context,
+                                controller,
+                              );
+                              if (!context.mounted) {
+                                return;
+                              }
+                              if (canExit) {
+                                _popOrHome(context);
+                              }
+                            } else {
+                              controller.previousStep();
+                            }
+                          },
+                    child: Text(
+                      controller.currentStep == 0
+                          ? 'Voltar para tela inicial'
+                          : 'Voltar',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: controller.isSubmitting
+                        ? null
+                        : () async {
+                            if (!controller.isSummaryStep) {
+                              controller.nextStep();
+                              return;
+                            }
+                            final confirmation = await controller.submit();
                             if (!context.mounted) {
                               return;
                             }
-                            if (canExit) {
-                              _popOrHome(context);
+                            if (confirmation != null) {
+                              context.pushReplacement('/confirmacao-denuncia');
+                            } else if (controller.submitError != null) {
+                              await showDialog<void>(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('Erro ao enviar denúncia'),
+                                  content: Text(controller.submitError!),
+                                  actions: [
+                                    FilledButton(
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
                             }
-                          } else {
-                            controller.previousStep();
-                          }
-                        },
-                  child: Text(
-                    controller.currentStep == 0
-                        ? 'Voltar para tela inicial'
-                        : 'Voltar',
-                    textAlign: TextAlign.center,
+                          },
+                    child: Text(
+                      controller.isSummaryStep ? 'Enviar Denúncia' : 'Próximo',
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FilledButton(
-                  onPressed: controller.isSubmitting
-                      ? null
-                      : () async {
-                          if (!controller.isSummaryStep) {
-                            controller.nextStep();
-                            return;
-                          }
-                          final confirmation = await controller.submit();
-                          if (!context.mounted) {
-                            return;
-                          }
-                          if (confirmation != null) {
-                            context.pushReplacement('/confirmacao-denuncia');
-                          } else if (controller.submitError != null) {
-                            await showDialog<void>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Erro ao enviar denúncia'),
-                                content: Text(controller.submitError!),
-                                actions: [
-                                  FilledButton(
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: const Text('OK'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                        },
-                  child: Text(
-                    controller.isSummaryStep ? 'Enviar Denúncia' : 'Próximo',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -37,31 +37,36 @@ class DynamicFormStepView extends StatelessWidget {
   final Future<String?> Function(PublicFormField field) onCapture;
   final Future<void> Function(PublicFormField field, PhotoRef photo)
   onRemovePhoto;
+  static const _contentPadding = EdgeInsets.fromLTRB(16, 16, 16, 128);
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-      children: [
-        Text(
-          accentPortugueseText(step.titulo),
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        if (step.descricao?.trim().isNotEmpty == true) ...[
-          const SizedBox(height: 8),
-          Text(accentPortugueseText(step.descricao!)),
-        ],
-        const SizedBox(height: 20),
-        for (final field in step.campos) ...[
-          _FieldShell(
-            field: field,
-            color: color,
-            error: errorFor(field),
-            child: _fieldWidget(context, field),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: ListView(
+        padding: _contentPadding,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+        children: [
+          Text(
+            accentPortugueseText(step.titulo),
+            style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 18),
+          if (step.descricao?.trim().isNotEmpty == true) ...[
+            const SizedBox(height: 8),
+            Text(accentPortugueseText(step.descricao!)),
+          ],
+          const SizedBox(height: 20),
+          for (final field in step.campos) ...[
+            _FieldShell(
+              field: field,
+              color: color,
+              error: errorFor(field),
+              child: _fieldWidget(context, field),
+            ),
+            const SizedBox(height: 18),
+          ],
         ],
-      ],
+      ),
     );
   }
 

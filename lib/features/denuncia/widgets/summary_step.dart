@@ -20,6 +20,7 @@ class SummaryStep extends StatelessWidget {
   final PublicForm form;
   final Map<String, Map<String, dynamic>> answers;
   final Map<String, List<PhotoRef>> photos;
+  static const _contentPadding = EdgeInsets.fromLTRB(16, 16, 16, 128);
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,8 @@ class SummaryStep extends StatelessWidget {
     );
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+      padding: _contentPadding,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
       children: [
         Text('Resumo', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),

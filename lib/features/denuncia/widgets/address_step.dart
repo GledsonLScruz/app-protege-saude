@@ -28,6 +28,8 @@ class AddressStep extends StatefulWidget {
 }
 
 class _AddressStepState extends State<AddressStep> {
+  static const _contentPadding = EdgeInsets.fromLTRB(16, 16, 16, 128);
+
   late final TextEditingController _cepController;
   late final TextEditingController _streetController;
   late final TextEditingController _numberController;
@@ -58,85 +60,91 @@ class _AddressStepState extends State<AddressStep> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-      children: [
-        Text(
-          'Endereço da vítima',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Se a criança/adolescente residir fora de Campina Grande, informe o CEP do local onde a violência ocorreu em Campina Grande.',
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _cepController,
-          keyboardType: TextInputType.number,
-          maxLength: 9,
-          decoration: InputDecoration(
-            labelText: 'CEP',
-            counterText: '',
-            errorText: widget.showErrors && widget.address.cep.length < 9
-                ? 'Informe um CEP válido.'
-                : widget.cepError,
-            suffixIcon: widget.isValidatingCep
-                ? const Padding(
-                    padding: EdgeInsets.all(12),
-                    child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : IconButton(
-                    icon: const Icon(Icons.search_rounded),
-                    onPressed: widget.onValidateCep,
-                  ),
-          ),
-          onChanged: (value) {
-            widget.onAddressChanged(cep: value);
-            if (value.replaceAll(RegExp(r'\D'), '').length == 8) {
-              widget.onValidateCep();
-            }
-          },
-        ),
-        if (widget.cepMessage != null) ...[
-          const SizedBox(height: 6),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: ListView(
+        padding: _contentPadding,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
+        children: [
           Text(
-            widget.cepMessage!,
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            'Endereço da vítima',
+            style: Theme.of(context).textTheme.titleLarge,
           ),
+          const SizedBox(height: 8),
+          const Text(
+            'Se a criança/adolescente residir fora de Campina Grande, informe o CEP do local onde a violência ocorreu em Campina Grande.',
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _cepController,
+            keyboardType: TextInputType.number,
+            maxLength: 9,
+            decoration: InputDecoration(
+              labelText: 'CEP',
+              counterText: '',
+              errorText: widget.showErrors && widget.address.cep.length < 9
+                  ? 'Informe um CEP válido.'
+                  : widget.cepError,
+              suffixIcon: widget.isValidatingCep
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.search_rounded),
+                      onPressed: widget.onValidateCep,
+                    ),
+            ),
+            onChanged: (value) {
+              widget.onAddressChanged(cep: value);
+              if (value.replaceAll(RegExp(r'\D'), '').length == 8) {
+                widget.onValidateCep();
+              }
+            },
+          ),
+          if (widget.cepMessage != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              widget.cepMessage!,
+              style: TextStyle(color: Theme.of(context).colorScheme.primary),
+            ),
+          ],
+          const SizedBox(height: 14),
+          TextField(
+            controller: _streetController,
+            decoration: InputDecoration(
+              labelText: 'Rua',
+              errorText:
+                  widget.showErrors && widget.address.rua.trim().length < 3
+                  ? 'Informe a rua.'
+                  : null,
+            ),
+            onChanged: (value) => widget.onAddressChanged(rua: value),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _numberController,
+            decoration: InputDecoration(
+              labelText: 'Número',
+              errorText:
+                  widget.showErrors && widget.address.numero.trim().isEmpty
+                  ? 'Informe o número.'
+                  : null,
+            ),
+            onChanged: (value) => widget.onAddressChanged(numero: value),
+          ),
+          const SizedBox(height: 14),
+          _ReadonlyField(label: 'Estado', value: widget.address.estado),
+          const SizedBox(height: 14),
+          _ReadonlyField(label: 'Cidade', value: widget.address.cidade),
+          const SizedBox(height: 14),
+          _ReadonlyField(label: 'Bairro', value: widget.address.bairro),
         ],
-        const SizedBox(height: 14),
-        TextField(
-          controller: _streetController,
-          decoration: InputDecoration(
-            labelText: 'Rua',
-            errorText: widget.showErrors && widget.address.rua.trim().length < 3
-                ? 'Informe a rua.'
-                : null,
-          ),
-          onChanged: (value) => widget.onAddressChanged(rua: value),
-        ),
-        const SizedBox(height: 14),
-        TextField(
-          controller: _numberController,
-          decoration: InputDecoration(
-            labelText: 'Número',
-            errorText: widget.showErrors && widget.address.numero.trim().isEmpty
-                ? 'Informe o número.'
-                : null,
-          ),
-          onChanged: (value) => widget.onAddressChanged(numero: value),
-        ),
-        const SizedBox(height: 14),
-        _ReadonlyField(label: 'Estado', value: widget.address.estado),
-        const SizedBox(height: 14),
-        _ReadonlyField(label: 'Cidade', value: widget.address.cidade),
-        const SizedBox(height: 14),
-        _ReadonlyField(label: 'Bairro', value: widget.address.bairro),
-      ],
+      ),
     );
   }
 
