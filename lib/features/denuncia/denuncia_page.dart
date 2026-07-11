@@ -311,12 +311,7 @@ class _DenunciaPageState extends State<DenunciaPage> {
                               controller.previousStep();
                             }
                           },
-                    child: Text(
-                      controller.currentStep == 0
-                          ? 'Voltar para tela inicial'
-                          : 'Voltar',
-                      textAlign: TextAlign.center,
-                    ),
+                    child: Text('Voltar', textAlign: TextAlign.center),
                   ),
                 ),
                 const SizedBox(width: 12),

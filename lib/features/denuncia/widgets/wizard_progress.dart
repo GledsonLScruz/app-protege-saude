@@ -34,7 +34,12 @@ class WizardProgress extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final compact = constraints.maxWidth < 520;
-            final circleSize = compact ? 34.0 : 42.0;
+            final preferredCircleSize = compact ? 34.0 : 42.0;
+            final circleSize = _dotSizeForWidth(
+              availableWidth: constraints.maxWidth,
+              stepCount: titles.length,
+              preferredSize: preferredCircleSize,
+            );
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -75,6 +80,23 @@ class WizardProgress extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  double _dotSizeForWidth({
+    required double availableWidth,
+    required int stepCount,
+    required double preferredSize,
+  }) {
+    if (stepCount <= 0 || availableWidth <= 0) {
+      return preferredSize;
+    }
+
+    final maxDotSize = availableWidth / stepCount;
+    if (maxDotSize < 24.0) {
+      return maxDotSize;
+    }
+
+    return preferredSize.clamp(24.0, maxDotSize).toDouble();
   }
 }
 
@@ -249,11 +271,13 @@ class _StepDot extends StatelessWidget {
                     ]
                   : null,
             ),
-            child: Text(
-              '${index + 1}',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w800,
+            child: FittedBox(
+              child: Text(
+                '${index + 1}',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
